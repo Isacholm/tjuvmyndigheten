@@ -20,9 +20,9 @@ form.addEventListener('submit', (e) => {
     ['receipt', 'Tjuven hade giltigt tillstånd',
       `${trn} hade giltigt inbrottstillstånd vid tidpunkten för tillgreppet. Tillgreppet har genomförts i enlighet med gällande föreskrifter. Ärendet föranleder ingen ytterligare åtgärd från myndighetens sida.`],
     ['errors', 'Registreringsnumret saknas i registret',
-      `${trn} finns inte i tillgreppsregistret. Tjuven kan ha bedrivit verksamhet utan tillstånd. Du kan <a href="tjanst.html?id=703">anmäla olicensierad tjuv</a> (TMV 703). Handläggningstid: 22 månader.`],
+      `${trn} återfinns inte i tillgreppsregistret. Vederbörande kan ha bedrivit verksamhet utan tillstånd. Anmälan kan göras via e-tjänsten <a href="tjanst.html?id=703">Anmäl olicensierad tjuv</a> (TMV 703). Handläggningstid: 22 månader.`],
     ['box warn', 'Tillståndet hade löpt ut',
-      `Tillståndet för ${trn} löpte ut i mars ${year}. Ansökan om förnyelse kom dock in i tid, och tillgreppet anses därför ha skett med behörighet.`],
+      `Tillståndet för ${trn} löpte ut i mars ${year}. Ansökan om förnyelse inkom dock i rätt tid, varför tillgreppet anses ha skett med behörighet.`],
   ];
   const [cls, title, text] = results[sum % 3];
   out.innerHTML = `<div class="${cls}"><h2 style="margin-top:0;font-size:19px">${title}</h2><p>${text}</p>

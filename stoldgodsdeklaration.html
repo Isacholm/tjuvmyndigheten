@@ -20,8 +20,8 @@
     <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span><a href="e-tjanster.html">E-tjänster</a><span aria-hidden="true">›</span><a href="e-tjanster.html#deklaration">Deklaration och redovisning</a><span aria-hidden="true">›</span>Stöldgodsdeklaration</div>
     <h1>Stöldgodsdeklaration 2026</h1>
     <div class="meta"><span>Blankett <strong>TMV 301</strong></span><span>Beskattningsår <strong>2026</strong></span><span>Sista dag <strong>2 maj 2027</strong></span></div>
-    <p class="ingress">Redovisa den egendom du har tillgripit under beskattningsåret. Fält markerade med * är obligatoriska.</p>
-    <div class="box warn" style="max-width:680px"><p><strong>Observera:</strong> Att inte deklarera sitt stöldgods kan medföra en administrativ sanktionsavgift. Själva stölden omfattas inte av denna bestämmelse.</p></div>
+    <p class="ingress">I deklarationen redovisas den egendom som deklaranten har tillgripit under beskattningsåret. Fält markerade med * är obligatoriska.</p>
+    <div class="box warn" style="max-width:680px"><p><strong>Observera:</strong> Underlåtenhet att deklarera stöldgods kan föranleda en administrativ sanktionsavgift. Själva tillgreppet omfattas inte av denna bestämmelse.</p></div>
 
     <div id="errors" class="errors" role="alert" tabindex="-1" hidden><h2>Deklarationen innehåller fel</h2><ul></ul></div>
 
@@ -36,11 +36,11 @@
         <legend>Tillgrepp under beskattningsåret</legend>
         <div class="field"><label for="antal">Totalt antal genomförda tillgrepp *</label>
           <input type="number" id="antal" name="antal" min="0" step="1" inputmode="numeric"><span class="unit">st</span></div>
-        <div class="field"><label for="varde">Sammanlagt uppskattat godsvärde *<span class="hint">Ange marknadsvärdet vid tidpunkten för tillgreppet, inte det pris du fått vid försäljning.</span></label>
+        <div class="field"><label for="varde">Sammanlagt uppskattat godsvärde *<span class="hint">Marknadsvärdet vid tidpunkten för tillgreppet ska anges. Erhållen köpeskilling vid avyttring ska inte anges.</span></label>
           <input type="number" id="varde" name="varde" min="0" step="1" inputmode="numeric"><span class="unit">kr</span></div>
         <div class="field"><label for="ater">Varav gods som återlämnats av misstag</label>
           <input type="number" id="ater" name="ater" min="0" step="1" inputmode="numeric" value="0"><span class="unit">kr</span></div>
-        <div class="field"><label for="distans">Tillgrepp utförda på distans<span class="hint">Avser tillgrepp där du inte varit fysiskt närvarande, exempelvis via internet.</span></label>
+        <div class="field"><label for="distans">Tillgrepp utförda på distans<span class="hint">Avser tillgrepp vid vilka deklaranten inte har varit fysiskt närvarande, exempelvis via internet.</span></label>
           <input type="number" id="distans" name="distans" min="0" step="1" inputmode="numeric" value="0"><span class="unit">st</span></div>
       </fieldset>
 
@@ -64,7 +64,7 @@
       <div class="field"><label class="check"><input type="checkbox" id="intyg" name="intyg"> <span>Jag intygar på heder och samvete att de uppgifter jag lämnat är riktiga och fullständiga, i den mån heder och samvete föreligger. *</span></label></div>
 
       <p><button class="btn" type="submit">Skicka in deklarationen</button></p>
-      <p style="font-size:14px;color:var(--muted)">Tjuvmyndigheten sparar inte de uppgifter du lämnar i e-tjänsten. Vi har tappat bort de förra.</p>
+      <p style="font-size:14px;color:var(--muted)">Tjuvmyndigheten sparar inte de uppgifter som lämnas i e-tjänsten. De uppgifter som lämnades föregående år har förlagts.</p>
     </form>
 
     <div id="kvitto" class="receipt" role="status" tabindex="-1" hidden></div>

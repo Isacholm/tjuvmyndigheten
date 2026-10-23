@@ -43,12 +43,12 @@ form.addEventListener('submit', (e) => {
   for (const [name, v] of [['ater', ater], ['distans', distans], ['kofot', kofot]]) {
     if (!Number.isInteger(v) || v < 0) err(name, 'Värdet måste vara ett heltal som är noll eller större.');
   }
-  if (antal === 0 && varde > 0) err('varde', 'Godsvärde kan inte uppstå utan tillgrepp. Om godset har uppstått på annat sätt, kontakta en annan myndighet.');
-  if (varde !== null && ater > varde) err('ater', 'Återlämnat gods får inte överstiga totalt godsvärde. Om du har lämnat tillbaka mer än du har tagit, kontakta Visselblåsarfunktionen.');
+  if (antal === 0 && varde > 0) err('varde', 'Godsvärde kan inte uppstå utan tillgrepp. Har godset uppkommit på annat sätt ska kontakt tas med annan myndighet.');
+  if (varde !== null && ater > varde) err('ater', 'Återlämnat gods får inte överstiga totalt godsvärde. Har mer gods återlämnats än vad som har tillgripits ska Visselblåsarfunktionen kontaktas.');
   if (antal !== null && distans > antal) err('distans', 'Antalet tillgrepp på distans får inte överstiga totalt antal tillgrepp.');
   if (!bestulen) err('bestulen', 'Ange om du har blivit bestulen på stöldgods.');
   if (!fortsatt) err('fortsatt', 'Ange om du har för avsikt att fortsätta verksamheten.');
-  if (!form.intyg.checked) err('intyg', 'Du måste intyga att uppgifterna är riktiga. Intygandet är obligatoriskt även om heder och samvete saknas.');
+  if (!form.intyg.checked) err('intyg', 'Uppgifternas riktighet ska intygas. Intygandet är obligatoriskt även i de fall heder och samvete saknas.');
 
   if (errors.length) {
     errorBox.querySelector('ul').innerHTML = errors.map(([field, msg]) => {
@@ -72,12 +72,12 @@ form.addEventListener('submit', (e) => {
 
   const notes = [];
   if (kofot > KOFOT_MAX) notes.push(`Avdrag medges för högst ${KOFOT_MAX} kofötter per beskattningsår. Överskjutande kofötter (${kofot - KOFOT_MAX} st) har inte beaktats.`);
-  if (ater > 0) notes.push('Återlämnande av misstag har registrerats. Upprepade misstag kan föranleda en kontroll av din yrkesskicklighet.');
+  if (ater > 0) notes.push('Återlämnande av misstag har registrerats. Upprepade misstag kan föranleda kontroll av deklarantens yrkesskicklighet.');
   if (distans > 0) notes.push('Distanstillägg har tagits ut enligt TMFS 2019:12.');
-  if (bestulen === 'ja') notes.push('Du har angett att du blivit bestulen på stöldgods. Gör en separat <a href="tjanst.html?id=404">anmälan om förlorat stöldgods</a> (TMV 404).');
-  if (fortsatt === 'nej') notes.push('Kom ihåg att avregistrera din verksamhet. Avregistreringen har en handläggningstid på 14 månader, under vilken du förväntas fortsätta verksamheten.');
-  if (fortsatt === 'vetej') notes.push('Du kommer att kallas till ett motiverande samtal med en handläggare.');
-  if (antal === 0) notes.push('Du har inte genomfört några tillgrepp under beskattningsåret. Om detta beror på långa handläggningstider kan du <a href="tjanst.html?id=108">ansöka om förtur</a>.');
+  if (bestulen === 'ja') notes.push('Deklaranten har uppgett sig ha blivit bestulen på stöldgods. Separat <a href="tjanst.html?id=404">anmälan om förlorat stöldgods</a> (TMV 404) ska göras.');
+  if (fortsatt === 'nej') notes.push('Deklaranten erinras om skyldigheten att avregistrera verksamheten. Avregistreringen har en handläggningstid om 14 månader, under vilken verksamheten förväntas fortgå.');
+  if (fortsatt === 'vetej') notes.push('Deklaranten kommer att kallas till motiverande samtal med handläggare.');
+  if (antal === 0) notes.push('Några tillgrepp har inte genomförts under beskattningsåret. Därest detta har föranletts av långa handläggningstider kan <a href="tjanst.html?id=108">ansökan om förtur</a> göras.');
 
   receipt.innerHTML = `
     <h2>Din deklaration har kommit in</h2>
