@@ -189,6 +189,7 @@ body.lattlast .not-lattlast { display: none; }
 .morse-only { display: none; }
 body.morse-print .morse-only { display: inline; }
 ul.register { padding-left: 18px; }
+table.sql-result { font-family: ui-monospace, "DejaVu Sans Mono", monospace; font-size: 14px; }
 @media print {
   .utility, header.site .tools, nav.main, .notice, footer, .no-print { display: none !important; }
   .print-only { display: block; }

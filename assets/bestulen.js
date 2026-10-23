@@ -2,15 +2,15 @@
 
 const form = document.getElementById('check');
 const out = document.getElementById('check-result');
-const TRN_RE = /^TRN\s?(\d{3})-(\d{3})$/i;
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const m = form.trn.value.trim().match(TRN_RE);
-  if (!m) {
-    out.innerHTML = '<div class="errors"><p style="margin:0">Registreringsnumret har fel format. Ange numret som TRN 123-456.</p></div>';
+  const fel = trnFel(form.trn.value);
+  if (fel.length) {
+    out.innerHTML = `<div class="errors"><h2 style="margin-top:0;font-size:19px">Registreringsnumret har fel format</h2><ul>${fel.map((f) => `<li>${f}</li>`).join('')}</ul></div>`;
     return;
   }
+  const m = form.trn.value.match(/^TRN (\d{3})-(\d{3})$/);
   const digits = (m[1] + m[2]).split('').map(Number);
   const sum = digits.reduce((a, b) => a + b, 0);
   const trn = `TRN ${m[1]}-${m[2]}`;

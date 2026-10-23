@@ -201,14 +201,55 @@ const GOOD_TO_KNOW = {
     'Handlingar som utfärdas av Tjuvmyndigheten, exempelvis tjuvlegitimation och tillgreppskvitto, godtas uteslutande av Tjuvmyndigheten.'],
 };
 
-// Särskilda uppgifter (del G) på vissa blanketter.
+// Särskilda uppgifter (del G) på vissa blanketter. Typ: check (kryssrutor), text (stor ruta), short (halv bredd).
 const BLANKETT_RUTOR = {
+  301: [
+    ['Antal tillgrepp januari–mars', 'short'], ['Antal tillgrepp april–juni', 'short'],
+    ['Antal tillgrepp juli–september', 'short'], ['Antal tillgrepp oktober–december', 'short'],
+    ['Totalt antal genomförda tillgrepp', 'short', 'Ska överensstämma med summan av kvartalen.'], ['Varav stöld', 'short'],
+    ['Varav ringa stöld', 'short'], ['Varav rån', 'short'],
+    ['Varav självtäkt', 'short', 'Summan av brottstyperna ska överensstämma med totalt antal tillgrepp.'], ['Olovlig kraftavledning, kWh', 'short'],
+    ['Olovlig avledning av värmeenergi, kWh', 'short'], ['Varav avlett maj–augusti, kWh', 'short', 'Anses sakna godsvärde.'],
+    ['Omfattar deklarationen tillgrepp av fortskaffningsmedel eller egenmäktigt förfarande?', 'check', ['Ja', 'Nej']],
+    ['Godsvärde, kontanter', 'short', 'Värderas till nominellt belopp.'], ['Godsvärde, elektronik', 'short'],
+    ['Godsvärde, cyklar', 'short'], ['Godsvärde, smycken och ur', 'short'],
+    ['Godsvärde, kakor', 'short', 'Avser kakor som har tillgripits med stöd av TMV 109.'], ['Godsvärde, övrigt', 'short'],
+    ['Sammanlagt uppskattat godsvärde', 'short', 'Ska överensstämma med summan av kategorierna.'], ['Varav återlämnat av misstag', 'short'],
+    ['Tillgrepp utförda på distans', 'short'], ['Avdragsgilla kofötter', 'short', 'Högst 3 st per beskattningsår.'],
+    ['Besiktningsnummer', 'text', 'Ett besiktningsnummer per kofot.'],
+    ['Totalt antal tillgrepp, upprepas för kontroll', 'short'], ['Sammanlagt godsvärde, upprepas för kontroll', 'short'],
+    ['Har deklaranten blivit bestulen på stöldgods?', 'check', ['Ja', 'Nej']],
+    ['Har deklaranten för avsikt att fortsätta verksamheten?', 'check', ['Ja', 'Nej', 'Vet ej']],
+    ['Var förvaras godset?', 'short', 'Uppgiften ska inte lämnas. Rutan ska lämnas tom.'], ['Bekräftelse att rutan ovan har lämnats tom', 'short', 'Undertecknas.'],
+  ],
   101: [['Hot eller våld', 'check', ['Hot', 'Våld', 'Hot och våld', 'Ej tillämpligt']],
         ['Form av hot som avses', 'text', 'Hot ska framföras på ett sakligt och respektfullt sätt.']],
   109: [['Antal kakor per tillfälle', 'text', 'Högst en (1). Den sista kakan omfattas inte av tillståndet.'],
         ['Kakburkens placering', 'check', ['Hemmet', 'Arbetsplatsen', 'Fikarum', 'Skafferi (kräver TMV 101)']]],
   804: [['Relation till den som ska bestjälas', 'check', ['Släkt', 'Nära personligt förhållande', 'Ekonomiskt intresse', 'Bekant från tidigare tillgrepp']]],
 };
+
+// Tjuvregistreringsnummer ska anges exakt som TRN 123-456. Returnerar de ändringar som krävs, tom lista om numret är korrekt.
+function trnFel(value) {
+  if (!value.trim()) return ['Tjuvregistreringsnummer saknas.'];
+  const fel = [];
+  if (value !== value.trim()) fel.push('Ta bort blanksteg före och efter numret.');
+  const [, prefix, space, rest] = value.trim().match(/^([A-Za-zÅÄÖåäö]*)(\s*)(.*)$/);
+  if (!prefix) fel.push('Inled numret med bokstäverna TRN.');
+  else if (prefix.toUpperCase() !== 'TRN') fel.push(`Ersätt ”${prefix}” med TRN.`);
+  else if (prefix !== 'TRN') fel.push('Ange TRN med versaler.');
+  if (prefix && space !== ' ') fel.push(space ? 'Ange exakt ett blanksteg mellan TRN och siffrorna.' : 'Infoga ett blanksteg mellan TRN och siffrorna.');
+  const digits = rest.replace(/\D/g, '');
+  if (digits.length !== 6) fel.push(`Numret ska innehålla sex siffror. Det angivna numret innehåller ${digits.length}.`);
+  else if (!/^\d{3}-\d{3}$/.test(rest)) {
+    if (/^\d{3}[–—−]\d{3}$/.test(rest)) fel.push('Ersätt tankstrecket med ett bindestreck (-). Tankstreck godtas inte.');
+    else if (/^\d{6}$/.test(rest)) fel.push('Infoga ett bindestreck (-) efter den tredje siffran.');
+    else if (/^\d{3}\s+\d{3}$/.test(rest)) fel.push('Ersätt blanksteget mellan siffergrupperna med ett bindestreck (-).');
+    else fel.push('Siffrorna ska anges i två grupper om tre, åtskilda med ett bindestreck (-), utan andra tecken.');
+  }
+  if (fel.length && digits.length === 6) fel.push(`Avsåg du TRN ${digits.slice(0, 3)}-${digits.slice(3)}?`);
+  return fel;
+}
 
 const MONTHS = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
 const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
@@ -538,7 +579,8 @@ function blankett(s) {
   const extra = BLANKETT_RUTOR[s.id];
   const delG = (p = '') => (extra
     ? del(p + 'G', 'Särskilda uppgifter', `Del G ska fyllas i innan del I undertecknas.`)
-      + grid(extra.map(([label, type, arg]) => ruta(label, type === 'check' ? checks(arg) : hint(arg), type === 'check' ? 'bl-wide' : 'bl-wide bl-tall')).join(''))
+      + grid(extra.map(([label, type, arg]) => ruta(label, type === 'check' ? checks(arg) : arg ? hint(arg) : '',
+        { check: 'bl-wide', text: 'bl-wide bl-tall', short: '' }[type])).join(''))
     : del(p + 'G', 'Särskilda uppgifter', `Del G ska inte fyllas i för blankett TMV ${s.id}. Att del G inte har fyllts i ska bekräftas genom underskrift.`)
       + grid(note('Jag bekräftar att del G inte har fyllts i.') + namn('sökandens ')));
   const bilagor = () => [1, 2, 3, 4, 5].map((r) => ruta(`Bilaga ${r}`, hint('Beskrivning, antal sidor och dnr om bilagan har lämnats tidigare.'), 'bl-wide')
@@ -714,6 +756,53 @@ function renderService(el) {
   if (btn) btn.addEventListener('click', () => { document.getElementById('closed').hidden = false; });
 }
 
+function renderBord(el) {
+  const namn = new URLSearchParams(location.search).get('namn');
+  const bord = BORD[namn];
+  if (!bord) { location.replace('tappade-uppgifter.html'); return; }
+  document.title = `Myndigheten har tappat bordet ${namn} – Tjuvmyndigheten`;
+  const antal = SERVICES.reduce((t, sv) => t + blankett(sv).fields.length * 2, 0).toLocaleString('sv-SE');
+  el.innerHTML = `
+    <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span>Myndigheten har tappat bordet ${namn}</div>
+    <h1>Myndigheten har tappat bordet ${namn}</h1>
+    <p class="ingress">Den lämnade uppgiften har tolkats som en begäran om att tappa bordet ${namn} (${bord[0].toLowerCase()}). Begäran har verkställts.</p>
+    <div class="prose">
+      ${bord[1].replace('{antal}', antal)}
+      <p>Uppgifterna kan inte återställas, då Avdelningen för återlämnande avvecklades 2019. Övriga bord har inte tappats. Myndigheten beklagar eventuella olägenheter.</p>
+      <p><a href="./">Gå till startsidan</a> eller se <a href="e-tjanster.html">alla e-tjänster</a>.</p>
+    </div>`;
+}
+
+// Resultat av SHOW TABLES och DESCRIBE.
+const SIDOR = ['index', 'e-tjanster', 'stoldgodsdeklaration', 'arbeta-som-tjuv', 'bestulen', 'handlaggningstider', 'nyheter',
+  'om-myndigheten', 'vanliga-fragor', 'doda-brevlador', 'bilagor', 'myndighetsinstruktion', 'kakor', 'personuppgifter', 'other-languages'];
+
+function renderSql(el) {
+  const params = new URLSearchParams(location.search);
+  const table = (head, rows) => `<div class="table-wrap"><table class="sql-result"><thead><tr>${head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const bord = BORD_KOLUMNER[params.get('bord')];
+  if (params.get('fraga') === 'describe' && bord) {
+    const namn = params.get('bord');
+    document.title = `DESCRIBE ${namn} – Tjuvmyndigheten`;
+    el.innerHTML = `
+      <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span>DESCRIBE ${namn}</div>
+      <h1>Resultat av DESCRIBE ${namn};</h1>
+      <p class="ingress">Frågan har verkställts. Bordet ${namn} (${BORD[namn][0].toLowerCase()}) har följande kolumner.</p>
+      ${table(['Fält', 'Typ', 'Null', 'Nyckel', 'Standardvärde', 'Övrigt'], bord)}
+      <p>${bord.length} rader i resultatet. Bordets innehåll lämnas inte ut.</p>`;
+    return;
+  }
+  document.title = 'SHOW TABLES – Tjuvmyndigheten';
+  el.innerHTML = `
+    <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span>SHOW TABLES</div>
+    <h1>Resultat av SHOW TABLES;</h1>
+    <p class="ingress">Frågan har verkställts. Myndighetens webbplats omfattar följande bord.</p>
+    ${table(['Tables_in_tjuvmyndigheten'], SIDOR.map((p) => [`<a href="${p}.html">${p}</a>`])
+      .concat(Object.keys(BORD).map((b) => [`<a href="sql.html?fraga=describe&amp;bord=${b}">${b}</a>`])))}
+    <p>${SIDOR.length + Object.keys(BORD).length} rader i resultatet.</p>`;
+}
+
 // Bilageregistret: samtliga bilagor till samtliga blanketter, i nummerordning.
 function renderBilageregister(el) {
   const forms = [...SERVICES].sort((a, b) => a.id - b.id).map((s) => ({ s, fields: blankett(s).fields }));
@@ -738,7 +827,116 @@ function renderBilageregister(el) {
 }
 
 const RENDERERS = { popular: renderPopular, news: renderNews, articles: renderNewsArticles,
-                    catalogue: renderCatalogue, times: renderTimes, service: renderService, bilagor: renderBilageregister };
+                    catalogue: renderCatalogue, times: renderTimes, service: renderService, bilagor: renderBilageregister, bord: renderBord, sql: renderSql };
+
+// Bord i myndighetens register som kan tappas. Varje bord har en egen sida (tappat-bord.html?namn=…).
+const BORD = {
+  tjuvar: ['Registret över yrkestjuvar',
+    '<p>Bordet innehöll myndighetens register över registrerade yrkestjuvar. Samtliga registrerade yrkestjuvar betraktas från och med i dag som olicensierade.</p><p>Ansökan om registrering ska göras på nytt via e-tjänsten <a href="tjanst.html?id=104">Registrera yrkestjuv</a> (TMV 104). Handläggningstid: 12–16 månader. Tjuvregistreringsnummer som har tilldelats tidigare kan inte återanvändas, då förteckningen över tilldelade nummer förvarades på samma bord.</p>'],
+  tillstand: ['Beviljade tillstånd',
+    '<p>Bordet innehöll samtliga beviljade inbrottstillstånd, ficktjuvslicenser och snattericertifikat. Tillgrepp som genomförs med stöd av ett tillstånd som har tappats anses ha genomförts utan tillstånd.</p><p>Myndigheten kan inte lämna besked om vilka tillstånd som har tappats, då förteckningen över tillstånden förvarades på samma bord.</p>'],
+  stoldgodsdeklarationer: ['Inlämnade stöldgodsdeklarationer',
+    '<p>Bordet innehöll samtliga inlämnade stöldgodsdeklarationer för beskattningsåret 2026. Deklarationerna ska lämnas på nytt på <a href="tjanst.html?id=301">blankett TMV 301</a>.</p><p>Deklarationerna för tidigare beskattningsår berörs inte, då de redan hade förlagts.</p>'],
+  handlaggningstider: ['Fastställda handläggningstider',
+    '<p>Bordet innehöll myndighetens fastställda handläggningstider. Samtliga handläggningstider har därmed upphört att gälla.</p><p>Nya handläggningstider fastställs när bordet har ersatts. Handläggningstiden för att ersätta bordet uppgår till 22 månader.</p>'],
+  blanketter: ['Myndighetens blankettförråd',
+    '<p>Bordet innehöll myndighetens förråd av blanketter. Samtliga blanketter har spridits över arkivets golv och sorteras för närvarande i nummerordning. Sorteringen beräknas vara slutförd 2031.</p><p>Under sorteringen ska blanketter skrivas ut från respektive e-tjänst. Bilagor till blanketterna berörs inte och återfinns alltjämt i myndighetens bilageregister.</p>'],
+  bilagor: ['Samtliga bilagor till myndighetens blanketter',
+    '<p>Bordet innehöll myndighetens samtliga bilagor, {antal} till antalet, ordnade i nummerordning. Bilagorna har vid tappandet blandats med varandra.</p><p>Myndigheten vill med anledning härav särskilt framhålla att bilagorna var mycket många. Myndigheten har svårt att se vilket berättigat syfte som har tillgodosetts genom att tappa just detta bord, då det fanns flera andra bord att välja mellan. Myndigheten noterar vidare att bilagorna redan var ordnade.</p><p>Sorteringen av bilagorna har påbörjats. Med nuvarande bemanning beräknas sorteringen vara slutförd år 2187. Under sorteringen hänvisas sökanden till myndighetens bilageregister, vars uppgifter alltjämt är korrekta men numera saknar motsvarighet i arkivet.</p><p><strong>Fortsatt bordstapp beivras.</strong></p>'],
+};
+
+// Kolumner per bord, för DESCRIBE: fält, typ, null, nyckel, standardvärde, övrigt.
+const BORD_KOLUMNER = {
+  tjuvar: [['trn', 'CHAR(10)', 'NEJ', 'PRI', '', 'Formatet TRN 123-456'], ['namn', 'VARCHAR(255)', 'NEJ', '', '', ''],
+    ['namnofortydligande', 'VARCHAR(255)', 'NEJ', '', '', 'Ska överensstämma med namn'], ['licens_giltig_till', 'DATE', 'JA', '', 'NULL', ''],
+    ['plats_i_kon', 'INT', 'NEJ', '', '', 'Uppdateras inte'], ['heder_och_samvete', 'BOOLEAN', 'JA', '', 'NULL', 'I den mån sådan föreligger']],
+  tillstand: [['tillstand_id', 'INT', 'NEJ', 'PRI', '', 'AUTO_INCREMENT'], ['trn', 'CHAR(10)', 'NEJ', 'MUL', '', ''],
+    ['typ', "ENUM('inbrott','ficktjuv','snatteri')", 'NEJ', '', '', ''], ['adress', 'VARCHAR(255)', 'NEJ', '', '', 'Endast den adress som anges i ansökan'],
+    ['giltigt_till', 'DATE', 'JA', '', 'NULL', ''], ['nattligt', 'BOOLEAN', 'NEJ', '', 'FALSE', 'Se TMV 106']],
+  stoldgodsdeklarationer: [['arende', 'CHAR(15)', 'NEJ', 'PRI', '', 'TM-ÅÅÅÅ-NNNNNNN'], ['trn', 'CHAR(10)', 'NEJ', 'MUL', '', ''],
+    ['beskattningsar', 'YEAR', 'NEJ', '', '', ''], ['godsvarde', 'INT', 'NEJ', '', '0', 'Marknadsvärde vid tillgreppet'],
+    ['forvaringsplats', 'VARCHAR(255)', 'JA', '', 'NULL', 'Uppgiften får inte lämnas'], ['inkom', 'DATE', 'JA', '', 'NULL', 'Dag för hämtning']],
+  handlaggningstider: [['blankett', 'CHAR(7)', 'NEJ', 'PRI', '', 'TMV NNN'], ['handlaggningstid', 'VARCHAR(20)', 'NEJ', '', '', ''],
+    ['forlangd', 'BOOLEAN', 'NEJ', '', 'TRUE', ''], ['senast_uppdaterad', 'DATE', 'JA', '', 'NULL', 'Uppdateras inte']],
+  blanketter: [['blankett', 'CHAR(7)', 'NEJ', 'PRI', '', 'TMV NNN'], ['titel', 'VARCHAR(255)', 'NEJ', '', '', ''],
+    ['antal_sidor', 'INT', 'NEJ', '', '8', ''], ['antal_rutor', 'INT', 'NEJ', '', '', 'Exklusive del J'], ['sorterad', 'BOOLEAN', 'NEJ', '', 'FALSE', '']],
+  bilagor: [['bilaga', 'VARCHAR(20)', 'NEJ', 'PRI', '', 'TMV NNN.R.F'], ['blankett', 'CHAR(7)', 'NEJ', 'MUL', '', ''],
+    ['ruta', 'INT', 'NEJ', '', '', ''], ['format', "ENUM('a','b')", 'NEJ', '', '', 'a = handskrivet, b = maskinläsbart'],
+    ['lopnummer', 'INT', 'NEJ', '', '1', ''], ['i_nummerordning', 'BOOLEAN', 'NEJ', '', 'TRUE', '']],
+};
+
+// SQL-satser som webbplatsen förstår. Ingen databas finns och inget skickas; satsen avgör bara vilken sida som visas.
+const SQL_SATSER = [
+  { kind: 'drop', words: 'DROP TABLE', re: /\b(drop)(\s+)(table)\b(\s*)([^;]*)(;?)(.*)$/i },
+  { kind: 'show', words: 'SHOW TABLES', re: /\b(show)(\s+)(tables)\b(\s*)([^;]*)(;?)(.*)$/i },
+  { kind: 'describe', words: 'DESCRIBE', re: /\b(describe|desc)\b()()(\s*)([^;]*)(;?)(.*)$/i },
+];
+const sqlSats = (value) => SQL_SATSER.find((q) => q.re.test(value));
+
+// Satsen ska anges som korrekt SQL. Returnerar de ändringar som krävs, tom lista om satsen är korrekt.
+function sqlFel(value) {
+  const q = sqlSats(value);
+  const [, w1, sp1, w2, sp2, rest, semi, tail] = value.match(q.re);
+  const fel = [];
+  let names = [];
+  if (q.kind === 'describe') {
+    if (w1 !== 'DESCRIBE' && w1 !== 'DESC') fel.push('Nyckelordet ska anges med versaler: DESCRIBE.');
+  } else {
+    if (`${w1} ${w2}` !== q.words) fel.push(`Nyckelorden ska anges med versaler: ${q.words}.`);
+    if (sp1 !== ' ') fel.push(`Ange exakt ett blanksteg mellan ${q.words.replace(' ', ' och ')}.`);
+  }
+  if (q.kind === 'show') {
+    if (rest.trim()) fel.push('SHOW TABLES ska inte följas av något bordsnamn.');
+  } else {
+    names = (q.kind === 'drop' ? rest.trim().replace(/^IF EXISTS\s+/, '') : rest.trim()).split(/\s*,\s*/).filter(Boolean);
+    const keyword = q.kind === 'drop' ? 'TABLE' : w1.toUpperCase();
+    if (!names.length) fel.push(q.kind === 'drop' ? 'Ange namnet på det bord som ska tappas.' : 'Ange namnet på det bord som ska beskrivas.');
+    else {
+      if (sp2 !== ' ') fel.push(`Ange exakt ett blanksteg mellan ${keyword} och bordets namn.`);
+      if (q.kind === 'describe' && names.length > 1) fel.push('DESCRIBE avser ett bord i taget.');
+      if (q.kind === 'describe' && names.includes('*')) fel.push('DESCRIBE kan inte anges med *. Ange ett bords namn.');
+      if (names.some((n) => /[åäöÅÄÖ]/.test(n))) fel.push('Bokstäverna å, ä och ö godtas inte i bordsnamn.');
+      if (names.some((n) => n !== '*' && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(n.replace(/[åäöÅÄÖ]/g, 'a')))) fel.push('Bordets namn får endast innehålla bokstäverna a–z, siffror och understreck och får inte inledas med en siffra. Samtliga bord anges med *.');
+      else {
+        const okanda = names.filter((n) => n !== '*' && !BORD[n]);
+        if (okanda.length) fel.push(`Bordet ${okanda.map((n) => `”${n}”`).join(', ')} finns inte i myndighetens register. Följande bord finns: ${Object.keys(BORD).join(', ')}.${q.kind === 'drop' ? ' Samtliga bord anges med *.' : ''}`);
+      }
+    }
+  }
+  if (!semi) fel.push('Avsluta satsen med semikolon (;).');
+  else if (tail.trim() && !tail.trim().startsWith('--')) fel.push('Efter semikolonet får endast en kommentar (--) följa.');
+  if (fel.length && !fel.some((f) => f.includes('finns inte i myndighetens register'))) {
+    if (q.kind === 'show') fel.push('Avsåg du SHOW TABLES;?');
+    else if (names.length && !(q.kind === 'describe' && names.includes('*'))) {
+      const fixed = names.map((n) => (/^\*+$/.test(n) ? '*' : n.replace(/[åÅäÄ]/g, 'a').replace(/[öÖ]/g, 'o').replace(/[^A-Za-z0-9_]/g, '_').replace(/^(\d)/, '_$1')));
+      fel.push(`Avsåg du ${q.words} ${q.kind === 'describe' ? fixed[0] : fixed.join(', ')};?`);
+    }
+  }
+  return { fel, kind: q.kind, names };
+}
+
+// Formulär som innehåller en SQL-sats leder, om satsen är korrekt, till motsvarande sida.
+document.addEventListener('submit', (e) => {
+  const field = [...e.target.elements].find((el) => sqlSats(el.value || ''));
+  if (!field) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  const { fel, kind, names } = sqlFel(field.value);
+  if (!fel.length) {
+    if (kind === 'show') location.href = 'sql.html?fraga=show';
+    else if (kind === 'describe') location.href = `sql.html?fraga=describe&bord=${names[0]}`;
+    else location.href = names.length === 1 && names[0] !== '*' ? `tappat-bord.html?namn=${names[0]}` : 'tappade-uppgifter.html';
+    return;
+  }
+  document.querySelector('.sql-fel')?.remove();
+  const box = document.createElement('div');
+  box.className = 'errors sql-fel';
+  box.setAttribute('role', 'alert');
+  box.tabIndex = -1;
+  box.innerHTML = `<h2 style="margin-top:0">SQL-satsen har fel format</h2><ul>${fel.map((f) => `<li>${f}</li>`).join('')}</ul>`;
+  document.getElementById('main').prepend(box);
+  box.focus();
+}, true);
 
 renderChrome();
 document.querySelectorAll('[data-render]').forEach((el) => RENDERERS[el.dataset.render](el));
