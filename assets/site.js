@@ -31,7 +31,7 @@ const SERVICES = [
   { id: '103', cat: 'tillstand', title: 'Ansök om snattericertifikat', time: '31 veckor',
     desc: 'Avser den som har för avsikt att bedriva tillgreppsverksamhet i mindre omfattning.',
     extra: '<p>Certifikatet omfattar tillgrepp av varor till ett sammanlagt värde av högst ett halvt prisbasbelopp per kalenderår. Verksamhet som överstiger nämnda belopp förutsätter registrering som yrkestjuv (TMV 104).</p>' },
-  { id: '104', cat: 'tillstand', title: 'Registrera yrkestjuv', time: '12–16 månader',
+  { id: '104', cat: 'tillstand', title: 'Registrera yrkestjuv', time: '12–16 månader', start: 'registrera-yrkestjuv.html',
     desc: 'Anmälan om avsikt att bedriva organiserad tillgreppsverksamhet.',
     extra: '<p>Registrerade yrkestjuvar tilldelas ett tjuvregistreringsnummer (TRN). Det åligger registrerade yrkestjuvar att årligen ge in årsredovisning för stöldverksamhet (TMV 307).</p>' },
   { id: '105', cat: 'tillstand', title: 'Ansök om utökat tillgreppsområde', time: '18 månader',
@@ -774,7 +774,7 @@ function renderBord(el) {
 }
 
 // Resultat av SHOW TABLES och DESCRIBE.
-const SIDOR = ['index', 'e-tjanster', 'stoldgodsdeklaration', 'arbeta-som-tjuv', 'bestulen', 'handlaggningstider', 'nyheter',
+const SIDOR = ['index', 'e-tjanster', 'stoldgodsdeklaration', 'registrera-yrkestjuv', 'arbeta-som-tjuv', 'bestulen', 'handlaggningstider', 'nyheter',
   'om-myndigheten', 'vanliga-fragor', 'doda-brevlador', 'bilagor', 'myndighetsinstruktion', 'kakor', 'personuppgifter', 'other-languages'];
 
 function renderSql(el) {

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registrera yrkestjuv – Tjuvmyndigheten</title>
+  <meta name="description" content="Ansök om registrering som yrkestjuv och tilldelning av tjuvregistreringsnummer (TMV 104).">
+  <meta property="og:title" content="Registrera yrkestjuv – Tjuvmyndigheten">
+  <meta property="og:description" content="Ansök om registrering som yrkestjuv och tilldelning av tjuvregistreringsnummer (TMV 104).">
+  <meta property="og:image" content="https://tjuvmyndigheten.se/assets/delning.png">
+  <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/site.js" defer></script>
+  <script src="assets/registrering.js" defer></script>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="wrap" id="main">
+    <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span><a href="e-tjanster.html">E-tjänster</a><span aria-hidden="true">›</span><a href="e-tjanster.html#tillstand">Tillstånd och licenser</a><span aria-hidden="true">›</span>Registrera yrkestjuv</div>
+    <h1>Registrera yrkestjuv</h1>
+    <div class="meta"><span>Blankett <strong>TMV 104</strong></span><span>Handläggningstid <strong>12–16 månader</strong></span></div>
+    <p class="ingress">Ansökan avser registrering som yrkestjuv och tilldelning av tjuvregistreringsnummer (TRN). Fält markerade med * är obligatoriska.</p>
+    <div class="box warn" style="max-width:680px"><p><strong>Observera:</strong> Tjuvregistreringsnummer tilldelas först när registreringen har beviljats. Under handläggningstiden medges verksamhet i hobbyform.</p></div>
+
+    <div id="errors" class="errors" role="alert" tabindex="-1" hidden><h2>Ansökan innehåller fel</h2><ul></ul></div>
+
+    <form class="etj" id="reg" novalidate>
+      <fieldset>
+        <legend>Uppgifter om sökanden</legend>
+        <div class="field"><label for="namn">Namn *</label>
+          <input type="text" id="namn" name="namn" autocomplete="off"></div>
+        <div class="field"><label for="namnof">Namnoförtydligande *<span class="hint">Ska överensstämma med namnet.</span></label>
+          <input type="text" id="namnof" name="namnof" autocomplete="off"></div>
+        <div class="field"><label for="adress">Verksamhetsadress *<span class="hint">Saknas fast adress anges den adress där det senaste tillgreppet genomfördes.</span></label>
+          <input type="text" id="adress" name="adress" autocomplete="off"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Verksamheten</legend>
+        <div class="field radios"><span class="label">Typ av verksamhet *</span>
+          <label><input type="radio" name="typ" value="inbrott"> Inbrott</label>
+          <label><input type="radio" name="typ" value="ficktjuveri"> Ficktjuveri</label>
+          <label><input type="radio" name="typ" value="snatteri"> Snatteri</label></div>
+        <div class="field"><label for="kommun">Kommun för tillståndsområdet *<span class="hint">Utökning till fler kommuner söks separat (TMV 105).</span></label>
+          <input type="text" id="kommun" name="kommun" autocomplete="off"></div>
+        <div class="field radios"><span class="label">Har du tidigare varit registrerad som yrkestjuv? *</span>
+          <label><input type="radio" name="tidigare" value="ja"> Ja</label>
+          <label><input type="radio" name="tidigare" value="nej"> Nej</label></div>
+      </fieldset>
+
+      <div class="field"><label class="check"><input type="checkbox" id="intyg" name="intyg"> <span>Jag intygar på heder och samvete att de uppgifter jag lämnat är riktiga och fullständiga, i den mån heder och samvete föreligger. *</span></label></div>
+
+      <p><button class="btn" type="submit">Skicka in ansökan</button></p>
+      <p style="font-size:14px;color:var(--muted)">Tjuvmyndigheten sparar inte de uppgifter som lämnas i e-tjänsten.</p>
+    </form>
+    <div id="kvitto" class="receipt" role="status" tabindex="-1" hidden></div>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>
