@@ -472,8 +472,7 @@ function renderChrome() {
     const form = document.querySelector('form.search');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      form.q.value = '';
-      form.q.placeholder = 'Inga träffar. Sökfunktionen är under upphandling.';
+      location.href = `sok.html?q=${encodeURIComponent(form.q.value.trim())}`;
     });
   }
   const footer = document.getElementById('site-footer');
@@ -773,6 +772,18 @@ function renderBord(el) {
     </div>`;
 }
 
+function renderSok(el) {
+  const q = (new URLSearchParams(location.search).get('q') || '').replace(/[<>&"]/g, '');
+  el.innerHTML = `
+    <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span>Sök</div>
+    <h1>Sökfunktionen är inte tillgänglig</h1>
+    <p class="ingress">${q ? `Sökningen på ”${q}” kunde inte genomföras` : 'Sökningen kunde inte genomföras'}, då myndighetens sökfunktion för närvarande inte är tillgänglig.</p>
+    <div class="prose">
+      <p>Sökfunktionen är under upphandling. Upphandlingen har blivit föremål för överprövning, och något avgörande har ännu inte meddelats. Gjorda sökningar lagras inte och kan inte återupptas när sökfunktionen har upphandlats.</p>
+      <p><a href="./">Gå till startsidan</a> eller se <a href="e-tjanster.html">alla e-tjänster</a>.</p>
+    </div>`;
+}
+
 // Resultat av SHOW TABLES och DESCRIBE.
 const SIDOR = ['index', 'e-tjanster', 'stoldgodsdeklaration', 'registrera-yrkestjuv', 'arbeta-som-tjuv', 'bestulen', 'handlaggningstider', 'nyheter',
   'om-myndigheten', 'vanliga-fragor', 'doda-brevlador', 'bilagor', 'myndighetsinstruktion', 'kakor', 'personuppgifter', 'other-languages'];
@@ -827,7 +838,7 @@ function renderBilageregister(el) {
 }
 
 const RENDERERS = { popular: renderPopular, news: renderNews, articles: renderNewsArticles,
-                    catalogue: renderCatalogue, times: renderTimes, service: renderService, bilagor: renderBilageregister, bord: renderBord, sql: renderSql };
+                    catalogue: renderCatalogue, times: renderTimes, service: renderService, bilagor: renderBilageregister, bord: renderBord, sql: renderSql, sok: renderSok };
 
 // Bord i myndighetens register som kan tappas. Varje bord har en egen sida (tappat-bord.html?namn=…).
 const BORD = {
