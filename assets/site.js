@@ -27,7 +27,7 @@ const SERVICES = [
     extra: '<p>Ansökan ska vara myndigheten tillhanda senast 24 månader före det planerade tillgreppet. Ansökningar som inkommer därefter handläggs i den ordning de inkommer, varvid beslutet kan komma att avse ett tillgrepp som redan har genomförts.</p><p>Tillståndet är personligt och kan inte överlåtas. Tillståndet gäller uteslutande den adress som anges i ansökan.</p>' },
   { id: '202', cat: 'tillstand', title: 'Förnya ficktjuvslicens', time: '9–11 månader',
     desc: 'Förnyelse av behörighet att bedriva ficktjuveriverksamhet i offentliga miljöer.',
-    extra: '<p>Licensen äger giltighet i fem år. Förnyelse förutsätter ett godkänt praktiskt prov i kollektivtrafik. Provet bokas separat och har för närvarande en kötid om 7 månader.</p><p>Verksamheten får fortgå under handläggningstiden, under förutsättning att ansökan om förnyelse har inkommit innan den tidigare licensen har löpt ut.</p>' },
+    extra: '<p>Licensen äger giltighet i fem år. Förnyelse förutsätter ett godkänt praktiskt prov i kollektivtrafik. Provet bokas separat och har för närvarande en kötid om 7 månader.</p><p>Verksamheten får fortgå under handläggningstiden, under förutsättning att ansökan om förnyelse har inkommit innan den tidigare licensen har löpt ut.</p><p>Licensen kan återkallas därest licenshavaren åsidosätter villkoren för licensen. Beslut om återkallelse gäller omedelbart, även om beslutet överklagas.</p>' },
   { id: '103', cat: 'tillstand', title: 'Ansök om snattericertifikat', time: '31 veckor',
     desc: 'Avser den som har för avsikt att bedriva tillgreppsverksamhet i mindre omfattning.',
     extra: '<p>Certifikatet omfattar tillgrepp av varor till ett sammanlagt värde av högst ett halvt prisbasbelopp per kalenderår. Verksamhet som överstiger nämnda belopp förutsätter registrering som yrkestjuv (TMV 104).</p>' },
@@ -109,6 +109,10 @@ const SERVICES = [
   { id: '602', cat: 'arbete', title: 'Ansök om arbetslöshetsersättning', time: '8 månader',
     desc: 'Avser den som har varit utan tillgreppsuppdrag under en längre period.',
     extra: '<p>Rätt till ersättning kan föreligga under förutsättning att sökanden aktivt söker minst sex nya tillgreppsmöjligheter per kalendermånad. Sökta tillgreppsmöjligheter redovisas i en aktivitetsrapport senast den 14:e varje månad.</p>' },
+
+  { id: '603', cat: 'arbete', title: 'Ansök om etableringsbidrag', time: '14 månader',
+    desc: 'Bidrag till den som nyligen har registrerats som yrkestjuv.',
+    extra: '<p>Etableringsbidrag kan beviljas för anskaffning av arbetsredskap under det första verksamhetsåret, exempelvis kofot, bultsax och mörk klädsel. Bidraget uppgår till högst 2 000 kronor.</p><p>Bidraget utbetalas i efterskott, sedan arbetsredskapen har anskaffats. Kvitto i original ska bifogas. Kvittot får inte vara tillgripet. Bidrag för kofot förutsätter att kofoten är besiktigad i enlighet med TJUVFS 2026:4.</p>' },
 
   // För dig som blivit bestulen
   { id: '701', cat: 'bestulen', title: 'Kontrollera tjuvens behörighet', time: 'Direkt*', start: 'bestulen.html#kontroll',
