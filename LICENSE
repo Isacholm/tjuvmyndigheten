@@ -1,7 +1,8 @@
 Tjuvmyndigheten
 Copyright (c) 2026 Isacholm
 
-This repository is covered by three sets of terms, depending on the material.
+This repository is covered by three sets of terms, depending on the material,
+plus third-party material under its own licenses (section 4).
 
 
 1. LOGO AND BRAND — All rights reserved
@@ -35,7 +36,7 @@ This repository is covered by three sets of terms, depending on the material.
 3. CODE — MIT License
 
    The source code (HTML markup, CSS and JavaScript), excluding the material
-   in sections 1 and 2, is licensed under the MIT License:
+   in sections 1, 2 and 4, is licensed under the MIT License:
 
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
@@ -54,3 +55,28 @@ This repository is covered by three sets of terms, depending on the material.
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
+
+
+4. THIRD-PARTY MATERIAL — under its own licenses
+
+   - assets/fonts/comic-neue-*.woff2 — Comic Neue, Copyright 2014 The Comic
+     Neue Project Authors. SIL Open Font License 1.1, see
+     assets/fonts/ComicNeue-OFL.txt.
+
+   - assets/fonts/freesans-swl.woff2 and assets/fonts/freesans-swl.sfd —
+     FreeSans SWL, Copyright 2002–2012 GNU FreeFont contributors and
+     2017–2018 zrajm. GNU General Public License v3, see
+     assets/fonts/FreeSans-SWL-LICENSE.txt. The .sfd file is the
+     corresponding source.
+
+   - assets/teckensprak-data.js — sign language transcriptions adapted from
+     Svenskt teckenspråkslexikon, Avdelningen för teckenspråk, Institutionen
+     för lingvistik, Stockholms universitet (https://teckensprakslexikon.su.se/),
+     obtained via https://github.com/zrajm/teckentranskription. Licensed under
+     Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA
+     4.0): https://creativecommons.org/licenses/by-nc-sa/4.0/
+     Changes: a selection of entries matched to the words on this site,
+     including inflected forms and compounds built from several entries, plus
+     the manual alphabet. The adaptation is shared under the same license.
+     Stockholms universitet is not affiliated with and does not endorse this
+     site.

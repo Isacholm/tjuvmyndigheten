@@ -186,6 +186,131 @@ const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return 
 const svc = (id) => SERVICES.find((s) => s.id === id);
 const svcUrl = (s) => `tjanst.html?id=${s.id}`;
 
+// Teckenspråk: byter ut varje ord mot dess transkription (assets/teckensprak-data.js,
+// som bara laddas när läget slås på). Ord som saknas bokstaveras med handalfabetet.
+// Verktygsraden och licensraden lämnas orörda så att knappen och källhänvisningen går att läsa.
+const signOriginals = new Map(); // textnod -> originaltext
+const signPlaceholders = new Map(); // fält -> original-placeholder
+let signObserver = null;
+
+const sign = (text) => text.replace(/[A-Za-zÅÄÖåäöÉé]+/g, (w) => window.TECKEN[w.toLowerCase()]
+  ?? [...w.toLowerCase()].map((c) => window.TECKEN_ALFABET[c]).join('\u{10C960}'));
+
+function toSigns(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => (signOriginals.has(n) || n.parentElement?.closest('script, style, .utility, .licenses')
+      ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes) {
+    const signed = sign(n.data);
+    if (signed !== n.data) { signOriginals.set(n, n.data); n.data = signed; }
+  }
+  for (const el of root.querySelectorAll?.('[placeholder]') ?? []) {
+    if (signPlaceholders.has(el)) continue;
+    signPlaceholders.set(el, el.placeholder);
+    el.placeholder = sign(el.placeholder);
+  }
+}
+
+function signLanguage(on) {
+  if (!on) {
+    signObserver?.disconnect();
+    signObserver = null;
+    for (const [n, text] of signOriginals) n.data = text;
+    signOriginals.clear();
+    for (const [el, text] of signPlaceholders) el.placeholder = text;
+    signPlaceholders.clear();
+    return;
+  }
+  if (!window.TECKEN) {
+    const s = document.createElement('script');
+    s.src = 'assets/teckensprak-data.js';
+    s.onload = () => { if (document.body.classList.contains('teckensprak')) signLanguage(true); };
+    document.head.append(s);
+    return;
+  }
+  if (signObserver) return;
+  toSigns(document.body);
+  signObserver = new MutationObserver((records) => {
+    for (const r of records) for (const n of r.addedNodes) if (n.isConnected) toSigns(n.nodeType === Node.TEXT_NODE ? n.parentNode : n);
+  });
+  signObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+// Lyssna: spelar upp huvudinnehållet som morsekod, ca 20 ord per minut på 600 Hz.
+const MORSE = {
+  a: '.-', b: '-...', c: '-.-.', d: '-..', e: '.', f: '..-.', g: '--.', h: '....', i: '..', j: '.---',
+  k: '-.-', l: '.-..', m: '--', n: '-.', o: '---', p: '.--.', q: '--.-', r: '.-.', s: '...', t: '-',
+  u: '..-', v: '...-', w: '.--', x: '-..-', y: '-.--', z: '--..', å: '.--.-', ä: '.-.-', ö: '---.', é: '..-..',
+  0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-', 5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.',
+  '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', '-': '-....-', '/': '-..-.', ':': '---...',
+  '(': '-.--.', ')': '-.--.-', '"': '.-..-.', "'": '.----.', '=': '-...-', '+': '.-.-.', '@': '.--.-.',
+};
+const MORSE_UNIT = 0.06; // sekunder per punkt
+let morse = null;
+
+// Originaltexten även när teckenspråksläget är på.
+function morseText() {
+  const walker = document.createTreeWalker(document.querySelector('main') || document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => (n.parentElement?.closest('script, style') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+  });
+  let text = '';
+  while (walker.nextNode()) text += ' ' + (signOriginals.get(walker.currentNode) ?? walker.currentNode.data);
+  return text.toLowerCase();
+}
+
+// Ger [start, längd] i punkter för varje ton: 1 mellan tecken, 3 mellan bokstäver, 7 mellan ord.
+function* morseTones(text) {
+  let t = 0;
+  for (const word of text.split(/\s+/)) {
+    const letters = [...word].map((c) => MORSE[c]).filter(Boolean);
+    if (!letters.length) continue;
+    for (const code of letters) {
+      for (const s of code) {
+        const len = s === '.' ? 1 : 3;
+        yield [t, len];
+        t += len + 1;
+      }
+      t += 2;
+    }
+    t += 4;
+  }
+}
+
+function listen(btn, on) {
+  if (morse) { clearInterval(morse.timer); morse.ctx.close(); morse = null; }
+  btn.setAttribute('aria-pressed', String(on));
+  btn.textContent = on ? 'Sluta lyssna' : 'Lyssna';
+  if (!on) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.value = 600;
+  gain.gain.value = 0;
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  const tones = morseTones(morseText());
+  const t0 = ctx.currentTime + 0.1;
+  let next = tones.next();
+  let end = t0;
+  // Schemalägg några sekunder i taget så att långa sidor inte bygger upp allt på en gång.
+  const schedule = () => {
+    while (!next.done && t0 + next.value[0] * MORSE_UNIT < ctx.currentTime + 2) {
+      const [start, len] = next.value;
+      const a = t0 + start * MORSE_UNIT;
+      end = a + len * MORSE_UNIT;
+      gain.gain.setTargetAtTime(0.25, a, 0.003);
+      gain.gain.setTargetAtTime(0, end, 0.003);
+      next = tones.next();
+    }
+    if (next.done && ctx.currentTime > end + 0.2) listen(btn, false);
+  };
+  morse = { ctx, timer: setInterval(schedule, 500) };
+  schedule();
+}
+
 function renderChrome() {
   const here = location.pathname.split('/').pop() || 'index.html';
   const header = document.getElementById('site-header');
@@ -193,7 +318,7 @@ function renderChrome() {
     header.outerHTML = `
       <a class="skip" href="#main">Till innehållet</a>
       <div class="utility"><div class="wrap">
-        <a href="#">Lyssna</a><a href="#">Lättläst</a><a href="#">Teckenspråk</a><a href="#">Other languages</a>
+        <a href="#" class="lyssna-toggle" role="button" aria-pressed="false">Lyssna</a><a href="#" class="lattlast-toggle" role="button" aria-pressed="false">Lättläst</a><a href="#" class="teckensprak-toggle" role="button" aria-pressed="false">Teckenspråk</a><a href="other-languages.html" lang="en">Other languages</a>
       </div></div>
       <header class="site"><div class="wrap">
         <a class="logo" href="./"><img src="assets/logo.svg" alt=""><span class="name">Tjuvmyndigheten<small>För en effektivare egendomsöverföring</small></span></a>
@@ -211,6 +336,25 @@ function renderChrome() {
       <div class="notice" role="status"><div class="wrap">
         <strong>Driftstörning:</strong> E-tjänsten Mina tillgrepp är tillfälligt otillgänglig. Servern har tillgripits och vi arbetar med att återta den.
       </div></div>`;
+    for (const mode of ['lattlast', 'teckensprak']) {
+      const btn = document.querySelector(`.${mode}-toggle`);
+      const set = (on) => {
+        if (mode === 'teckensprak') signLanguage(on);
+        document.body.classList.toggle(mode, on);
+        btn.setAttribute('aria-pressed', String(on));
+        try { localStorage.setItem(mode, on ? '1' : ''); } catch (e) {}
+      };
+      try { if (localStorage.getItem(mode)) set(true); } catch (e) {}
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        set(!document.body.classList.contains(mode));
+      });
+    }
+    const lyssna = document.querySelector('.lyssna-toggle');
+    lyssna.addEventListener('click', (e) => {
+      e.preventDefault();
+      listen(lyssna, !morse);
+    });
     const form = document.querySelector('form.search');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -239,6 +383,8 @@ function renderChrome() {
           <div><h4>Följ oss</h4><ul><li>Vi följer dig.</li></ul></div>
         </div>
         <p class="fine">Webbplatsen drivs med <a href="https://fqa.9front.org/">9front</a>. Driftmiljön har upphandlats i enlighet med gällande regelverk.<br>Tjuvmyndigheten är inte en statlig myndighet och har ingen koppling till Polismyndigheten.</p>
+        <p class="fine licenses">Teckenspråk: transkriptioner ur <a href="https://teckensprakslexikon.su.se/">Svenskt teckenspråkslexikon</a>, Avdelningen för teckenspråk, Institutionen för lingvistik, Stockholms universitet, under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.sv">CC BY-NC-SA 4.0</a>, hämtade via <a href="https://github.com/zrajm/teckentranskription">teckentranskription</a>. Urvalet är bearbetat (böjningar, sammansatta ord och handalfabetet) och <a href="assets/teckensprak-data.js">bearbetningen</a> delas under samma licens. Stockholms universitet har ingen koppling till och står inte bakom webbplatsen.<br>
+        Typsnitt: Comic Neue, © The Comic Neue Project Authors, under <a href="assets/fonts/ComicNeue-OFL.txt">SIL Open Font License 1.1</a>. FreeSans SWL, © GNU FreeFont-bidragsgivare och zrajm, under <a href="assets/fonts/FreeSans-SWL-LICENSE.txt">GNU GPL v3</a> (<a href="assets/fonts/freesans-swl.sfd">källkod</a>).</p>
       </div></footer>`;
   }
 }
