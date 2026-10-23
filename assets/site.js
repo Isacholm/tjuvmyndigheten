@@ -45,6 +45,9 @@ const SERVICES = [
   { id: '108', cat: 'tillstand', title: 'Ansök om förtur i inbrottskön', time: '18–20 månader',
     desc: 'För dig som har särskilt brådskande tillgreppsbehov.',
     extra: '<p>Ansökningar om förtur handläggs i turordning. Förtur kan inte beviljas för handläggningen av ansökan om förtur.</p>' },
+  { id: '109', cat: 'tillstand', title: 'Ansök om tillstånd för tillgrepp ur kakburk', time: '6–8 veckor',
+    desc: 'Ansök om tillstånd att tillgripa kakor ur kakburk i hemmet, på arbetsplatsen eller i fikarum.',
+    extra: '<p>Tillståndet omfattar kakor i kakburk, på kakfat och i kakask. Kakor som förvaras i skafferi kräver <a href="tjanst.html?id=101">inbrottstillstånd</a> (TMV 101). Tillgrepp i fikarum på arbetsplatsen får endast ske under ordinarie fikatid.</p><p>Tillståndet gäller högst en kaka per tillfälle. Den sista kakan omfattas inte av tillståndet.</p><p>Om du blir <a href="tjanst.html?id=403">fångad med fingrarna i kakburken</a> ska händelsen rapporteras som en arbetsplatsolycka (TMV 403).</p>' },
 
   // Deklaration och redovisning
   { id: '301', cat: 'deklaration', title: 'Lämna stöldgodsdeklaration', time: '19 månader', start: 'stoldgodsdeklaration.html',
@@ -149,6 +152,14 @@ const NEWS = [
       <p>Som ett första steg har myndigheten tillsatt en arbetsgrupp som ska utreda förutsättningarna för att bilda en styrgrupp. Styrgruppen ska i sin tur ta fram ett förslag till en gemensam samverkansmodell.</p>
       <p>Arbetet beräknas pågå till 2031.</p>
       <p>Polismyndigheten har inte tillfrågats om att delta.</p>` },
+  { date: '2026-10-22', type: 'Pressmeddelande', title: 'Tjuvmyndigheten förbättrar tillgängligheten på webbplatsen',
+    body: `<p>Tjuvmyndigheten har genomfört en rad åtgärder för att göra webbplatsen tillgänglig för fler. Målet är att alla, oavsett funktionsförmåga, ska kunna ta del av information om tillgreppsverksamhet på lika villkor.</p>
+      <p>Under <strong>Lättläst</strong> visas texten i dubbel storlek och i ett typsnitt som myndighetens interna utredning har bedömt som särskilt lättläst. Innehållet har inte förenklats, eftersom det redan bedöms vara enkelt.</p>
+      <p>Under <strong>Teckenspråk</strong> visas hela webbplatsen i transkriberat svenskt teckenspråk. Ord som saknar ett etablerat tecken bokstaveras. Videor med teckenspråkstolk kan inte erbjudas, eftersom upphandlingen av tolktjänster har överprövats.</p>
+      <p>Funktionen <strong>Lyssna</strong> läser upp sidans innehåll som morsekod. Uppläsningen av startsidan tar cirka 15 minuter. Myndigheten har valt morsekod eftersom det är det enda uppläsningsformat som inte kräver en extern tjänst. Besökarnas uppgifter tillgrips därmed inte av någon annan.</p>
+      <p>– Tillgänglighet är en rättighet. Alla ska ha samma möjlighet att förstå vad som har tagits ifrån dem, säger Tjuvmyndighetens tillförordnade generaltjuvdirektör.</p>
+      <p>Information på andra språk är under uppbyggnad. <a href="other-languages.html">Läs mer om andra språk</a></p>
+      <p>Myndigheten tar gärna emot synpunkter på webbplatsens tillgänglighet. Synpunkter lämnas till <a href="tjanst.html?id=806">Tjuvombudsmannen</a>.</p>` },
   { date: '2026-10-20', title: 'Nya regler för avdrag på kofötter träder i kraft den 1 januari',
     body: 'Från och med den 1 januari 2027 ska kofötter som används yrkesmässigt besiktigas vart tredje år för att vara avdragsgilla. Kofötter som köpts före 2020 omfattas av en övergångsregel. Läs mer i TMFS 2026:4.' },
   { date: '2026-10-17', title: 'Ny handlingsplan för jämställdhetsintegrering',
@@ -377,8 +388,8 @@ function renderChrome() {
           </ul></div>
           <div><h4>Om webbplatsen</h4><ul>
             <li><a href="#">Tillgänglighetsredogörelse</a></li>
-            <li><a href="#">Kakor – vi tar dem</a></li>
-            <li><a href="#">Så behandlar vi dina personuppgifter (som våra egna)</a></li>
+            <li><a href="kakor.html">Kakor</a></li>
+            <li><a href="personuppgifter.html">Så behandlar vi dina personuppgifter</a></li>
           </ul></div>
           <div><h4>Följ oss</h4><ul><li>Vi följer dig.</li></ul></div>
         </div>
