@@ -73,7 +73,7 @@ form.addEventListener('submit', (e) => {
   const notes = [];
   if (kofot > KOFOT_MAX) notes.push(`Avdrag medges för högst ${KOFOT_MAX} kofötter per beskattningsår. Överskjutande kofötter (${kofot - KOFOT_MAX} st) har inte beaktats.`);
   if (ater > 0) notes.push('Återlämnande av misstag har registrerats. Upprepade misstag kan föranleda kontroll av deklarantens yrkesskicklighet.');
-  if (distans > 0) notes.push('Distanstillägg har tagits ut enligt TMFS 2019:12.');
+  if (distans > 0) notes.push('Distanstillägg har tagits ut enligt TJUVFS 2019:12.');
   if (bestulen === 'ja') notes.push('Deklaranten har uppgett sig ha blivit bestulen på stöldgods. Separat <a href="tjanst.html?id=404">anmälan om förlorat stöldgods</a> (TMV 404) ska göras.');
   if (fortsatt === 'nej') notes.push('Deklaranten erinras om skyldigheten att avregistrera verksamheten. Avregistreringen har en handläggningstid om 14 månader, under vilken verksamheten förväntas fortgå.');
   if (fortsatt === 'vetej') notes.push('Deklaranten kommer att kallas till motiverande samtal med handläggare.');

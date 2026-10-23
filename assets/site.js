@@ -56,7 +56,7 @@ const SERVICES = [
     extra: '<p>Stöldgodsdeklarationen ska ha inkommit senast den 2 maj året efter beskattningsåret. Deklarationen kan ges in digitalt.</p><div class="box warn"><p><strong>Observera:</strong> Underlåtenhet att deklarera stöldgods kan föranleda en administrativ sanktionsavgift. Själva tillgreppet omfattas inte av denna bestämmelse.</p></div>' },
   { id: '302', cat: 'deklaration', title: 'Begär avdrag för kofot', time: '7–9 månader',
     desc: 'Avdrag för arbetsredskap som nyttjas i tillgreppsverksamhet.',
-    extra: '<p>Schablonavdrag medges med 450 kronor per kofot, för högst tre kofötter per beskattningsår. Kofoten ska vara besiktigad i enlighet med TMFS 2026:4. Kvitto i original ska bifogas. Kvittot får inte vara tillgripet.</p>' },
+    extra: '<p>Schablonavdrag medges med 450 kronor per kofot, för högst tre kofötter per beskattningsår. Kofoten ska vara besiktigad i enlighet med TJUVFS 2026:4. Kvitto i original ska bifogas. Kvittot får inte vara tillgripet.</p>' },
   { id: '303', cat: 'deklaration', title: 'Redovisa oredovisade tillgångar', time: '24 månader',
     desc: 'Rättelse av tidigare ingivna stöldgodsdeklarationer.',
     extra: '<p>Vid frivillig rättelse av en tidigare deklaration kan sanktionsavgiften komma att nedsättas. Rättelsen ska avse egendom som faktiskt har tillgripits. Egendom som deklaranten enbart har övervägt att tillgripa ska inte redovisas.</p>' },
@@ -162,7 +162,7 @@ const NEWS = [
       <p>Information på andra språk är under uppbyggnad. <a href="other-languages.html">Läs mer om andra språk</a></p>
       <p>Myndigheten mottar gärna synpunkter avseende webbplatsens tillgänglighet. Synpunkter lämnas till <a href="tjanst.html?id=806">Tjuvombudsmannen</a>.</p>` },
   { date: '2026-10-20', title: 'Nya regler för avdrag på kofötter träder i kraft den 1 januari',
-    body: 'Från och med den 1 januari 2027 ska kofötter som nyttjas yrkesmässigt besiktigas vart tredje år för att avdrag ska medges. För kofötter som har förvärvats före 2020 gäller en övergångsbestämmelse. Se vidare TMFS 2026:4.' },
+    body: 'Från och med den 1 januari 2027 ska kofötter som nyttjas yrkesmässigt besiktigas vart tredje år för att avdrag ska medges. För kofötter som har förvärvats före 2020 gäller en övergångsbestämmelse. Se vidare TJUVFS 2026:4.' },
   { date: '2026-10-17', title: 'Ny handlingsplan för jämställdhetsintegrering',
     body: 'Tjuvmyndigheten har beslutat om en ny handlingsplan för jämställdhetsintegrering avseende perioden 2026–2028. Handlingsplanen innebär bland annat att lottning införs vid tilldelning av tillgreppsobjekt. <a href="om-myndigheten.html#jamstalldhet">Läs mer om myndighetens jämställdhetsarbete</a>' },
   { date: '2026-10-14', title: 'Tjuvmyndigheten varnar för oseriösa aktörer – allt fler stölder genomförs utan tillstånd',
