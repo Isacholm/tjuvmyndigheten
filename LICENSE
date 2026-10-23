@@ -80,3 +80,12 @@ plus third-party material under its own licenses (section 4).
      the manual alphabet. The adaptation is shared under the same license.
      Stockholms universitet is not affiliated with and does not endorse this
      site.
+
+   - tools/lexicon-data.js — an unmodified copy of the lexicon data from
+     https://github.com/zrajm/teckentranskription (lexicon-data.js), which is
+     imported from Svenskt teckenspråkslexikon, Avdelningen för teckenspråk,
+     Institutionen för lingvistik, Stockholms universitet
+     (https://teckensprakslexikon.su.se/). Licensed under Creative Commons
+     Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0):
+     https://creativecommons.org/licenses/by-nc-sa/4.0/
+     It is included only as input for tools/teckensprak.mjs.

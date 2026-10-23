@@ -147,6 +147,9 @@ const SERVICES = [
   { id: '806', cat: 'ovrigt', title: 'Klaga hos Tjuvombudsmannen', time: '30 månader',
     desc: 'Avser den som anser sig ha blivit orättvist behandlad av myndigheten.',
     extra: '<p>Tjuvombudsmannen är en oberoende tillsynsfunktion som granskar att tjuvar behandlas rättvist av myndigheten. Tjuvombudsmannen saknar befogenhet att ändra myndighetens beslut.</p>' },
+  { id: '910', cat: 'ovrigt', title: 'Begär hjälp att fylla i blankett', time: '16 månader',
+    desc: 'Begäran om hjälp vid ifyllande av blankett som har skrivits ut med teckenspråk eller i hörbart format.',
+    extra: '<p>Bilaga TMV 910 fogas till den blankett som begäran avser.</p><p>Beviljad hjälp lämnas skriftligen, i myndighetsläsbart format. Blanketten som hjälpen avser anses inte ha inkommit förrän hjälpen har lämnats.</p>' },
 ];
 
 const NEWS = [
@@ -197,6 +200,15 @@ const GOOD_TO_KNOW = {
     'Handlingar som utfärdas av Tjuvmyndigheten, exempelvis tjuvlegitimation och tillgreppskvitto, godtas uteslutande av Tjuvmyndigheten.'],
 };
 
+// Särskilda uppgifter (del G) på vissa blanketter.
+const BLANKETT_RUTOR = {
+  101: [['Hot eller våld', 'check', ['Hot', 'Våld', 'Hot och våld', 'Ej tillämpligt']],
+        ['Form av hot som avses', 'text', 'Hot ska framföras på ett sakligt och respektfullt sätt.']],
+  109: [['Antal kakor per tillfälle', 'text', 'Högst en (1). Den sista kakan omfattas inte av tillståndet.'],
+        ['Kakburkens placering', 'check', ['Hemmet', 'Arbetsplatsen', 'Fikarum', 'Skafferi (kräver TMV 101)']]],
+  804: [['Relation till den som ska bestjälas', 'check', ['Släkt', 'Nära personligt förhållande', 'Ekonomiskt intresse', 'Bekant från tidigare tillgrepp']]],
+};
+
 const MONTHS = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
 const fmtDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
 const svc = (id) => SERVICES.find((s) => s.id === id);
@@ -214,7 +226,7 @@ const sign = (text) => text.replace(/[A-Za-zÅÄÖåäöÉé]+/g, (w) => window.
 
 function toSigns(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (n) => (signOriginals.has(n) || n.parentElement?.closest('script, style, .utility, .licenses')
+    acceptNode: (n) => (signOriginals.has(n) || n.parentElement?.closest('script, style, .utility, .licenses, .bl-mlf')
       ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
   });
   const nodes = [];
@@ -326,6 +338,50 @@ function listen(btn, on) {
   morse = { ctx, timer: setInterval(schedule, 500) };
   schedule();
 }
+
+// Skrivs en blankett eller bilaga ut medan Lyssna är aktivt sker utskriften i morsekod.
+// Del J (myndighetsläsbart format) lämnas i vanlig text.
+const morseOriginals = new Map();
+const morseWord = (w) => (![...w.toLowerCase()].some((c) => MORSE[c]) ? w : [...w.toLowerCase()].map((c) => (MORSE[c] ? MORSE[c].replace(/\./g, '·').replace(/-/g, '−') : c)).join(' '));
+const toMorse = (text) => text.match(/^\s*/)[0] + text.trim().split(/\s+/).map(morseWord).join(' / ') + text.match(/\s*$/)[0];
+
+window.addEventListener('beforeprint', () => {
+  if (!morse || document.body.classList.contains('morse-print')) return;
+  document.body.classList.add('morse-print');
+  for (const root of document.querySelectorAll('.blankett, .bilagor-print')) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.parentElement?.closest('.bl-mlf') || !n.data.trim() ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+    });
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      morseOriginals.set(n, n.data);
+      n.data = toMorse(signOriginals.get(n) ?? n.data);
+    }
+  }
+});
+window.addEventListener('afterprint', () => {
+  for (const [n, text] of morseOriginals) n.data = text;
+  morseOriginals.clear();
+  document.body.classList.remove('morse-print');
+});
+
+// Sidhuvud och sidnummer i utskriftens marginaler följer samma läge som sidans text.
+const MARGIN_HEAD = 'Namn ________________   Underskrift ________________   Namnoförtydligande ________________   TRN __________';
+window.addEventListener('beforeprint', () => {
+  const morseMode = document.body.classList.contains('morse-print');
+  const signMode = !morseMode && document.body.classList.contains('teckensprak') && window.TECKEN;
+  if (!morseMode && !signMode) return;
+  const conv = morseMode ? toMorse : sign;
+  const font = signMode ? '"FreeSans-SWL", sans-serif' : 'Georgia, serif';
+  const style = document.createElement('style');
+  style.id = 'print-margins';
+  style.textContent = `@media print {
+    @page { @bottom-right { content: "${conv('Sida')} " counter(page) " ${conv('av')} " counter(pages); font-family: ${font}; } }
+    @page blankett { @top-left { content: "${conv(MARGIN_HEAD)}"; font-family: ${font}; } }
+  }`;
+  document.head.append(style);
+});
+window.addEventListener('afterprint', () => document.getElementById('print-margins')?.remove());
 
 function renderChrome() {
   const here = location.pathname.split('/').pop() || 'index.html';
@@ -443,6 +499,170 @@ function renderTimes(el) {
   </table></div>`;
 }
 
+// Pappersblankett som skrivs ut från e-tjänstens sida och lämnas i en död brevlåda.
+// Blanketten är avsiktligt lång och kräver att samma uppgifter lämnas flera gånger.
+function blankett(s) {
+  let n = 0;
+  const fields = []; // fritextrutor, var och en med bilaga a (handskrivet) och b (maskinläsbart)
+  // Fritextrutor får ett fält för handskrift och ett maskinläsbart fält med en ruta per tecken.
+  // word anger fältens namn, exempelvis Namn och Maskinläsbartnamn.
+  const ruta = (label, inner = '', cls = '', word = '') => {
+    const nr = ++n;
+    const free = !inner.includes('bl-checks');
+    if (free) fields.push({ nr, label, word });
+    const dual = `<div class="bl-hand"><span class="bl-sub">${word || 'Handskrivet'} · även på bilaga <span class="bl-code">TMV ${s.id}.${nr}.a</span></span></div>`
+      + `<span class="bl-sub">Maskinläsbart${word.toLowerCase()} · en versal per ruta · även på bilaga <span class="bl-code">TMV ${s.id}.${nr}.b</span></span>${COMB.repeat(cls.includes('bl-tall') ? 3 : 1)}`;
+    return `<div class="bl-ruta ${cls}"><span class="bl-label">${nr}. ${label}</span>${inner}${free ? dual : ''}</div>`;
+  };
+  // Överallt där ett namn ska anges: namn, underskrift och namnoförtydligande.
+  const cap = (t) => t[0].toUpperCase() + t.slice(1);
+  const namn = (who = '') => ruta(cap(`${who}namn`), '', 'bl-third', 'Namn')
+    + ruta(cap(`${who}underskrift`), '', 'bl-third', 'Underskrift')
+    + ruta(cap(`${who}namnoförtydligande`), '', 'bl-third', 'Namnoförtydligande');
+  const note = (t) => `<p class="bl-note">${t}</p>`;
+  const checks = (opts) => `<div class="bl-checks">${opts.map((o) => `<span><span class="bl-box"></span>${o}</span>`).join('')}</div>`;
+  const hint = (t) => `<span class="bl-hint">${t}</span>`;
+  const del = (letter, title, note = '') => `<h3 class="bl-del">Del ${letter}. ${title}</h3>${note ? `<p class="bl-delnote">${note}</p>` : ''}`;
+  const grid = (cells, cls = '') => `<div class="bl-grid ${cls}">${cells}</div>`;
+  const sida = (first = false) => `
+      <div class="bl-strip${first ? '' : ' bl-page'}">
+        <p class="bl-sidnr">Blankett TMV ${s.id} · Sida ____ av ____ <span>(sidnummer fylls i av sökanden)</span></p>
+        ${grid(namn('sökandens ') + ruta('Tjuvregistreringsnummer (TRN)', hint('Varje sida ska undertecknas.'), 'bl-wide'))}
+      </div>`;
+  const person = (who, phone = '') =>
+    namn(who) + ruta('Tjuvregistreringsnummer (TRN)', hint('Anges i formatet TRN 123-456.'), 'bl-wide')
+    + ruta('Verksamhetsadress', '', 'bl-wide')
+    + ruta('Postnummer och ort') + ruta('Telefon', hint(phone || 'Myndigheten tar kontakt vid behov.'))
+    + ruta('E-postadress', hint('Myndigheten mottar inte e-post. Uppgiften ska likväl lämnas.'), 'bl-wide');
+  const extra = BLANKETT_RUTOR[s.id];
+  const delG = (p = '') => (extra
+    ? del(p + 'G', 'Särskilda uppgifter', `Del G ska fyllas i innan del I undertecknas.`)
+      + grid(extra.map(([label, type, arg]) => ruta(label, type === 'check' ? checks(arg) : hint(arg), type === 'check' ? 'bl-wide' : 'bl-wide bl-tall')).join(''))
+    : del(p + 'G', 'Särskilda uppgifter', `Del G ska inte fyllas i för blankett TMV ${s.id}. Att del G inte har fyllts i ska bekräftas genom underskrift.`)
+      + grid(note('Jag bekräftar att del G inte har fyllts i.') + namn('sökandens ')));
+  const bilagor = () => [1, 2, 3, 4, 5].map((r) => ruta(`Bilaga ${r}`, hint('Beskrivning, antal sidor och dnr om bilagan har lämnats tidigare.'), 'bl-wide')
+    + namn(`bilaga ${r}, `)).join('');
+  // Del A–I. Anropas en gång för blanketten och en gång för kopian i del J.
+  const delar = (p) => `
+      ${sida(true)}
+      ${del(p + 'A', 'Uppgifter om sökanden')}
+      ${grid(person('sökandens ') + ruta('Har sökanden tidigare ansökt om samma sak?', checks(['Ja', 'Nej', 'Vet ej'])) + ruta('Om ja, ange dnr'))}
+      ${del(p + 'B', 'Uppgifter om ärendet')}
+      ${grid(ruta('Ärendet avser', hint('Beskriv ärendet. Fortsätt vid behov på separat bilaga, som ska förtecknas i del F.'), 'bl-wide bl-tall')
+        + ruta('Avser datum') + ruta('Avser adress eller plats')
+        + ruta('Har ärendet samband med åtgärd från annan myndighet?', checks(['Ja', 'Nej']) + hint('Om ja ska ärendet inte ges in till Tjuvmyndigheten.'), 'bl-wide')
+        + ruta('Avser ärendet tillgrepp av fortskaffningsmedel eller egenmäktigt förfarande?', checks(['Ja', 'Nej']) + hint('Om ja ska ärendet inte ges in, då sådana tillgrepp faller utanför myndighetens uppdrag enligt 7 § förordningen med instruktion för Tjuvmyndigheten.'), 'bl-wide'))}
+
+      ${sida()}
+      ${del(p + 'C', 'Kontrolluppgifter om sökanden', 'Uppgifterna i del A ska upprepas nedan för kontroll.')}
+      ${grid(person('sökandens '))}
+      ${del(p + 'D', 'Kontaktperson', 'Saknar sökanden kontaktperson ska sökanden anges som kontaktperson.')}
+      ${grid(person('kontaktpersonens ', 'Kontaktpersonen ska kunna nås 02.00–04.30.'))}
+      ${del(p + 'E', 'Ombud', 'Ombud ska ha fullmakt. Saknas ombud ska detta bekräftas genom underskrift.')}
+      ${grid(namn('ombudets ') + ruta('Ombudets TRN') + ruta('Fullmakt bifogas', checks(['Ja', 'Nej', 'Ombud saknas']))
+        + note('Sökanden bekräftar uppgifterna i del E genom underskrift nedan.') + namn('sökandens '))}
+
+      ${sida()}
+      ${del(p + 'F', 'Förteckning över bilagor', 'Saknas bilagor ska ”Inga bilagor” anges under bilaga 1. Samtliga rader ska undertecknas.')}
+      ${grid(bilagor(), 'bl-grid-bil')}
+      ${delG(p)}
+
+      ${sida()}
+      ${del(p + 'H', 'Kontrollfrågor')}
+      ${grid(ruta('Har uppgifterna i del A upprepats i del C?', checks(['Ja', 'Nej'])) + ruta('Har samtliga sidor undertecknats?', checks(['Ja', 'Nej']))
+        + ruta('Har anvisningarna lästs?', checks(['Ja', 'Nej', 'Anvisningarna saknas'])) + ruta('Har kritstreck förberetts?', checks(['Vit', 'Blå', 'Röd']))
+        + ruta('Överensstämmer handskrivna och maskinläsbara uppgifter?', checks(['Ja', 'Nej', 'Delvis']), 'bl-wide'))}
+      ${del(p + 'I', 'Intygande och underskrift')}
+      ${grid(ruta('Intygande', checks(['Jag intygar på heder och samvete att de uppgifter jag lämnat är riktiga och fullständiga, i den mån heder och samvete föreligger.']), 'bl-wide')
+        + ruta('Ort och datum', '', 'bl-wide')
+        + namn('sökandens ') + ruta('Sökandens underskrift', hint('Upprepas för kontroll.'), 'bl-wide', 'Underskrift')
+        + namn('vittne 1, ') + ruta('Vittne 1, TRN', '', 'bl-wide')
+        + namn('vittne 2, ') + ruta('Vittne 2, TRN', '', 'bl-wide'))}
+`;
+  const html = `
+    <section class="print-only blankett">
+      <div class="instr-head">
+        <img src="assets/logo.svg" alt="">
+        <div class="instr-agency">Tjuvmyndigheten</div>
+        <div class="instr-series">Blankett TMV ${s.id}</div>
+        <div class="instr-facts"><span><strong>TMV ${s.id}</strong></span><span>Handläggningstid ${s.time}</span><span>Fastställd med stöd av TJUVFS 2019:118</span></div>
+      </div>
+      <h2 class="bl-title">${s.title}</h2>
+      <p class="bl-intro">${s.desc}</p>
+      <div class="bl-anv"><strong>Anvisningar</strong>
+        <ol>
+          <li>Blanketten ska fyllas i med blått eller svart bläck och med tryckbokstäver. Blyerts, korrigeringsvätska och kritor godtas inte.</li>
+          <li>Samtliga delar ska fyllas i, även de delar som inte är tillämpliga. Del som inte är tillämplig ska undertecknas.</li>
+          <li>Uppgifterna i del A ska upprepas i del C. Avvikelser mellan del A och del C medför att ärendet avvisas.</li>
+          <li>Sökandens namn, underskrift, namnoförtydligande och tjuvregistreringsnummer ska anges överst på varje sida, både handskrivet och maskinläsbart.</li>
+          <li>Rutor avsedda för myndigheten får inte fyllas i av sökanden.</li>
+          <li>Fritextuppgifter ska lämnas både handskrivet och maskinläsbart, med en versal per ruta. Handskrivna och maskinläsbara uppgifter ska överensstämma.</li>
+          <li>Ifylld blankett lämnas i någon av myndighetens <a href="doda-brevlador.html">döda brevlådor</a>. Ofullständigt ifylld blankett återsänds inte.</li>
+        </ol>
+      </div>
+      ${delar('')}
+      <div class="tecken-only bl-mlf">
+        ${del('J', 'Myndighetsläsbart format', '<span class="not-lattlast">Har blanketten skrivits ut med teckenspråk eller i hörbart format ska del J fyllas i. Del J utgör en kopia av del A–I. Uppgifterna lämnas i myndighetsläsbart format, med latinska bokstäver. Behöver sökanden hjälp att fylla i blanketten kan bilaga TMV 910 <em>Begär hjälp att fylla i blankett</em> fogas till blanketten. <span class="morse-only">Observera att blanketter och bilagor i hörbart format inte kan spelas upp.</span></span><span class="lattlast-only">Endast föreskriftsenlig typografi godtas. Faktisk läsbarhet utgör inte grund för undantag.</span>')}
+        ${delar('J.')}
+      </div>
+      <div class="bl-office">
+        <span class="bl-label">Fylls i av myndigheten</span>
+        ${grid(['Dnr', 'Inkom (dag för hämtning)', 'Död brevlåda nr', 'Kritans färg', 'Handläggare', 'Beslut']
+          .map((l) => `<div class="bl-ruta"><span class="bl-label">${l}</span></div>`).join(''), 'bl-grid3')}
+      </div>
+      <p class="instr-end">Ifylld blankett lämnas i någon av myndighetens döda brevlådor. Tjuvmyndigheten är en fiktiv myndighet.</p>
+    </section>`;
+  return { html, fields };
+}
+
+const COMB = `<div class="bl-comb">${'<span></span>'.repeat(48)}</div>`;
+
+// En bilaga per fritextruta och format: TMV 101.4.a (handskrivet) och TMV 101.4.b (maskinläsbart).
+function bilaga(s, { nr, label }, kind) {
+  const code = `TMV ${s.id}.${nr}.${kind}`;
+  const dual = (l, w = '', cls = 'bl-wide', rows = 1) => `<div class="bl-ruta ${cls}"><span class="bl-label">${l}</span><div class="bl-hand"><span class="bl-sub">${w || 'Handskrivet'}</span></div><span class="bl-sub">Maskinläsbart${w.toLowerCase()} · en versal per ruta</span>${COMB.repeat(rows)}</div>`;
+  const ids = `<div class="bl-grid">${dual('Sökandens namn', 'Namn', 'bl-third') + dual('Sökandens underskrift', 'Underskrift', 'bl-third')
+    + dual('Sökandens namnoförtydligande', 'Namnoförtydligande', 'bl-third') + dual('Tjuvregistreringsnummer (TRN)')}</div>`;
+  const format = kind === 'a' ? 'Handskrivet' : 'Maskinläsbart';
+  const box = (l, hintText = '') => `<div class="bl-ruta"><span class="bl-label">${l}</span>${hintText ? `<span class="bl-hint">${hintText}</span>` : ''}</div>`;
+  return `
+    <section class="bilaga">
+      <div class="instr-head">
+        <img src="assets/logo.svg" alt="">
+        <div class="instr-agency">Tjuvmyndigheten</div>
+        <div class="instr-series">Bilaga till blankett TMV ${s.id}</div>
+        <div class="instr-facts"><span><strong>${code}</strong></span><span>Till blankett TMV ${s.id}, ruta ${nr}</span><span>${format}</span></div>
+      </div>
+      <h2 class="bl-title">Bilaga ${code} – ${format}</h2>
+      <p class="bl-intro">Bilagan avser ruta ${nr} <em>${label}</em> i blankett TMV ${s.id} ${s.title}. Bilagan ska fogas till blanketten och förtecknas i del F. Bilagor som inte ryms i del F förtecknas på blankett TMV 900.</p>
+      <div class="bl-input">
+      ${ids}
+      <p class="bl-delnote">Rutorna ovan omfattas inte av kravet på separata bilagor.</p>
+      </div>
+      <div class="bl-grid">${[['Löpnummer', 'Exemplarets nummer.'], ['Totalt antal exemplar', 'Antal exemplar av denna bilaga.']]
+        .map(([l, h]) => `<div class="bl-ruta"><span class="bl-label">${l}</span><span class="bl-hint">${h}</span><div class="bl-hand"><span class="bl-sub">Handskrivet</span></div><span class="bl-sub">Maskinläsbart · en siffra per ruta</span><div class="bl-comb">${'<span></span>'.repeat(4)}</div></div>`).join('')}</div>
+      <p class="bl-delnote">Ryms uppgiften inte på en bilaga ska ytterligare exemplar av samma bilaga användas. Varje exemplar ska förses med löpnummer, både handskrivet och maskinläsbart.</p>
+      <div class="bl-input">
+      <h3 class="bl-del">Ruta ${nr}. ${label}</h3>
+      <p class="bl-delnote">${kind === 'a'
+        ? 'Uppgiften lämnas handskrivet, med blått eller svart bläck. Uppgiften ska överensstämma med bilaga ' + `TMV ${s.id}.${nr}.b.`
+        : 'Uppgiften lämnas med en versal per ruta. Rutor som inte används ska lämnas tomma och får inte överkorsas. Uppgiften ska överensstämma med bilaga ' + `TMV ${s.id}.${nr}.a.`}</p>
+      ${kind === 'a' ? `<div class="bl-lines">${'<div></div>'.repeat(6)}</div>` : `<div class="bl-comb-rows">${COMB.repeat(5)}</div>`}
+      </div>
+      <div class="tecken-only bl-mlf">
+        <h3 class="bl-del">Myndighetsläsbart format</h3>
+        <p class="bl-delnote"><span class="not-lattlast">Har bilagan skrivits ut med teckenspråk eller i hörbart format ska uppgifterna nedan lämnas i myndighetsläsbart format, med latinska bokstäver. Behöver sökanden hjälp att fylla i bilagan kan bilaga TMV 910 <em>Begär hjälp att fylla i blankett</em> fogas till den. <span class="morse-only">Observera att blanketter och bilagor i hörbart format inte kan spelas upp.</span></span><span class="lattlast-only">Endast föreskriftsenlig typografi godtas. Faktisk läsbarhet utgör inte grund för undantag.</span></p>
+        ${ids}
+        <div class="bl-grid">${dual(`Ruta ${nr}. ${label}`, '', 'bl-wide', 2)}</div>
+      </div>
+      <div class="bl-office">
+        <span class="bl-label">Fylls i av myndigheten</span>
+        <div class="bl-grid bl-grid3">${box('Dnr') + box('Kontrollerad mot ruta ' + nr, 'Ja / Nej') + box(`Kontrollerad mot ${code.slice(0, -1)}${kind === 'a' ? 'b' : 'a'}`, 'Ja / Nej')}</div>
+      </div>
+      <p class="instr-end">Tjuvmyndigheten är en fiktiv myndighet.</p>
+    </section>`;
+}
+
 function renderService(el) {
   const s = svc(new URLSearchParams(location.search).get('id'));
   if (!s) {
@@ -451,6 +671,7 @@ function renderService(el) {
     return;
   }
   document.title = `${s.title} – Tjuvmyndigheten`;
+  const form = blankett(s);
   el.innerHTML = `
     <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span><a href="e-tjanster.html">E-tjänster</a><span aria-hidden="true">›</span><a href="e-tjanster.html#${s.cat}">${CATEGORIES[s.cat]}</a></div>
     <h1>${s.title}</h1>
@@ -475,8 +696,10 @@ function renderService(el) {
         </ol>
         <p class="no-print">${s.start
           ? `<a class="btn" href="${s.start}">Starta e-tjänsten</a>`
-          : `<button class="btn" type="button" id="start">Starta e-tjänsten</button>`}</p>
-        <div class="box warn" id="closed" hidden><p><strong>E-tjänsten är tillfälligt stängd.</strong> Blanketten TMV ${s.id} kan i stället lämnas i en av myndighetens döda brevlådor. Blanketten och uppgift om brevlådornas placering beställs via e-tjänsten.</p></div>
+          : `<button class="btn" type="button" id="start">Starta e-tjänsten</button>`}
+          <a class="btn secondary" href="#" onclick="print(); return false">Skriv ut blankett TMV ${s.id}</a></p>
+        <p class="no-print">Varje fritextruta i blanketten ska även lämnas på två bilagor: en handskriven (a) och en maskinläsbar (b). Bilagorna till blankett TMV ${s.id} återfinns i myndighetens bilageregister.</p>
+        <div class="box warn" id="closed" hidden><p><strong>E-tjänsten är tillfälligt stängd.</strong> Blanketten TMV ${s.id} kan i stället skrivas ut och lämnas i en av myndighetens döda brevlådor. Uppgift om brevlådornas placering beställs via e-tjänsten. <a href="doda-brevlador.html">Så går det till</a></p></div>
       </div>
       <aside>
         <div class="box"><h3>Har du frågor?</h3><p>Se myndighetens sammanställning av <a href="vanliga-fragor.html">vanliga frågor</a>.</p></div>
@@ -484,13 +707,37 @@ function renderService(el) {
           ${SERVICES.filter((o) => o.cat === s.cat && o.id !== s.id).slice(0, 4).map((o) => `<li><a href="${svcUrl(o)}">${o.title}</a></li>`).join('')}
         </ul></div>
       </aside>
-    </div>`;
+    </div>
+    ${form.html}`;
   const btn = document.getElementById('start');
   if (btn) btn.addEventListener('click', () => { document.getElementById('closed').hidden = false; });
 }
 
+// Bilageregistret: samtliga bilagor till samtliga blanketter, i nummerordning.
+function renderBilageregister(el) {
+  const forms = [...SERVICES].sort((a, b) => a.id - b.id).map((s) => ({ s, fields: blankett(s).fields }));
+  const total = forms.reduce((t, f) => t + f.fields.length * 2, 0);
+  el.innerHTML = `<p>Registret omfattar ${total.toLocaleString('sv-SE')} bilagor till ${forms.length} blanketter. Bilagorna redovisas i nummerordning.</p>`
+    + `<ul class="register">${forms.map(({ s, fields }) => fields.map((f) => ['a', 'b']
+      .map((k) => `<li><a href="#" data-bilaga="${s.id}.${f.nr}.${k}">TMV ${s.id}.${f.nr}.${k}</a></li>`).join('')).join('')).join('')}</ul>`
+    + '<div class="print-only bilagor-print"></div>';
+  const holder = el.querySelector('.bilagor-print');
+  el.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-bilaga]');
+    if (!a) return;
+    e.preventDefault();
+    const [id, nr, kind] = a.dataset.bilaga.split('.');
+    const { s, fields } = forms.find((f) => f.s.id === id);
+    holder.innerHTML = bilaga(s, fields.find((f) => String(f.nr) === nr), kind);
+    // Teckenspråket översätts direkt, eftersom utskriften annars hinner påbörjas före översättningen.
+    if (document.body.classList.contains('teckensprak') && window.TECKEN) toSigns(holder);
+    print();
+  });
+  window.addEventListener('afterprint', () => { holder.innerHTML = ''; });
+}
+
 const RENDERERS = { popular: renderPopular, news: renderNews, articles: renderNewsArticles,
-                    catalogue: renderCatalogue, times: renderTimes, service: renderService };
+                    catalogue: renderCatalogue, times: renderTimes, service: renderService, bilagor: renderBilageregister };
 
 renderChrome();
 document.querySelectorAll('[data-render]').forEach((el) => RENDERERS[el.dataset.render](el));

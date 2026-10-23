@@ -183,15 +183,80 @@ footer .fine { margin-top: 28px; padding-top: 16px; border-top: 1px solid #cfccc
 footer .fine + .fine { margin-top: 0; border-top: 0; }
 
 .print-only { display: none; }
+.lattlast-only { display: none; }
+body.lattlast .lattlast-only { display: inline; }
+body.lattlast .not-lattlast { display: none; }
+.morse-only { display: none; }
+body.morse-print .morse-only { display: inline; }
+ul.register { padding-left: 18px; }
 @media print {
   .utility, header.site .tools, nav.main, .notice, footer, .no-print { display: none !important; }
   .print-only { display: block; }
+  .tecken-only { display: none; }
+  body.teckensprak .tecken-only, body.morse-print .tecken-only, body.lattlast .tecken-only { display: block; }
+  body.morse-print .blankett, body.morse-print .bilaga { overflow-wrap: anywhere; }
+  body.teckensprak .bl-mlf, body.teckensprak .bl-mlf *, body.lattlast .bl-mlf, body.lattlast .bl-mlf * { font-family: "Noto Serif", Georgia, "Times New Roman", serif !important; }
+  .bl-mlf { break-before: page; }
+  /* I lättläst format ersätts bilagans inmatningsfält av det myndighetsläsbara formatet, så att bilagan ryms på en sida. */
+  body.lattlast .bilaga .bl-input { display: none; }
+  .bilaga .bl-mlf { break-before: auto; }
+  body.lattlast { zoom: 1; }
+  /* Hela sidan använder blankettformatet, så att ingen sidbrytning uppstår vid byte av sidformat. */
+  .blankett-doc { page: blankett; }
 
   /* Instruktionen skrivs ut som ett dokument i myndighetens författningssamling. */
   @page { size: A4; margin: 22mm 22mm 24mm 24mm; @bottom-right { content: "Sida " counter(page) " av " counter(pages); font: 8.5pt Georgia, serif; color: #444; } }
-  .instr-doc { font: 10.5pt/1.5 "Noto Serif", Georgia, "Times New Roman", serif; color: #000; background: #fff; }
-  .instr-doc header.site, .instr-doc .skip, .instr-doc .crumbs, .instr-doc .meta { display: none !important; }
-  .instr-doc .wrap { max-width: none; padding: 0; }
+  .instr-doc, .blankett-doc { font: 10.5pt/1.5 "Noto Serif", Georgia, "Times New Roman", serif; color: #000; background: #fff; }
+  .instr-doc header.site, .instr-doc .skip, .blankett-doc header.site, .blankett-doc .skip, .instr-doc .crumbs, .instr-doc .meta { display: none !important; }
+  .instr-doc .wrap, .blankett-doc .wrap { max-width: none; padding: 0; }
+
+  /* Blanketter: endast pappersblanketten skrivs ut från e-tjänstens sida. */
+  .blankett-doc [data-render="service"] > :not(.blankett) { display: none !important; }
+  .bilageregister main > :not([data-render]), .bilageregister [data-render="bilagor"] > :not(.bilagor-print) { display: none !important; }
+  .bilaga { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .bilaga + .bilaga { break-before: page; }
+  .bilaga .instr-head { padding-bottom: 3mm; }
+  .bilaga .instr-head img { width: 13mm; }
+  .bl-lines div { height: 9mm; border-bottom: .5pt solid #000; }
+  .bl-comb-rows .bl-comb { margin-top: 2.5mm; }
+  @page blankett { margin: 16mm 15mm 14mm 15mm; @top-left { content: "Namn ________________   Underskrift ________________   Namnoförtydligande ________________   TRN __________"; font: 8pt Georgia, serif; color: #333; } }
+  .blankett { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .blankett .instr-head { padding-bottom: 3mm; }
+  .blankett .instr-head img { width: 13mm; }
+  .blankett .instr-agency { margin-top: 1.5mm; }
+  .blankett .instr-facts { margin-top: 2.5mm; }
+  .blankett .instr-end { margin-top: 4mm; }
+  .bl-title { margin: 4mm 0 1.5mm; font-size: 14pt; text-align: center; color: #000; }
+  .bl-intro { margin: 0 auto 3.5mm; max-width: 140mm; font-size: 9pt; text-align: center; }
+  .bl-grid { display: flex; flex-wrap: wrap; }
+  .bl-ruta, .bl-note { flex: 0 0 50%; box-sizing: border-box; min-height: 9.5mm; padding: 1mm 2mm; border: .5pt solid #000; break-inside: avoid; }
+  .bl-wide, .bl-note { flex-basis: 100%; }
+  .bl-ruta.bl-third { flex-basis: 33.333%; }
+  .bl-tall { min-height: 20mm; }
+  .bl-sub .bl-code { text-transform: none; }
+  .bl-sub { display: block; margin-top: .8mm; font-size: 5.5pt; letter-spacing: .3pt; text-transform: uppercase; color: #666; }
+  .bl-hand { min-height: 7mm; border-bottom: .5pt dotted #777; }
+  .bl-tall .bl-hand { min-height: 16mm; }
+  .bl-comb { display: flex; flex-wrap: wrap; height: 5mm; margin-top: .6mm; overflow: hidden; }
+  .bl-comb span { flex: 0 0 4.2mm; height: 5mm; border: .5pt solid #000; border-left-width: 0; box-sizing: border-box; }
+  .bl-comb span:first-child { border-left-width: .5pt; }
+  .bl-label { display: block; font-size: 7pt; letter-spacing: .4pt; text-transform: uppercase; color: #333; }
+  .bl-hint { display: block; font-size: 7pt; font-style: italic; color: #555; }
+  .bl-checks { display: flex; flex-wrap: wrap; gap: 1mm 6mm; margin-top: 1mm; font-size: 8.5pt; }
+  .bl-box { display: inline-block; width: 3mm; height: 3mm; margin-right: 1.5mm; border: .75pt solid #000; vertical-align: -.3mm; }
+  .bl-note { min-height: 0; padding: 1.5mm 2mm; font-size: 8pt; font-style: italic; background: #eee; }
+  .bl-office { margin-top: 4mm; padding: 1.5mm 2mm; background: #eee; break-inside: avoid; }
+  .bl-office .bl-grid { margin-top: 1mm; background: #fff; }
+  .bl-grid3 > .bl-ruta { flex-basis: 33.333%; }
+  .bl-page { break-before: page; }
+  .bl-strip { margin-bottom: 3mm; }
+  .bl-sidnr { margin: 0 0 1mm; font-size: 8pt; }
+  .bl-sidnr span { font-style: italic; color: #555; }
+  .bl-del { margin: 4mm 0 1mm; font-size: 10pt; color: #000; break-after: avoid; }
+  .bl-delnote { margin: 0 0 1.5mm; font-size: 8pt; font-style: italic; }
+  .bl-anv { margin: 0 0 4mm; padding: 2mm 3mm; font-size: 8pt; border: .75pt solid #000; }
+  .bl-anv ol { margin: 1mm 0 0; padding-left: 5mm; }
+  .bl-anv a { color: inherit; text-decoration: none; }
   .instr-doc .prose { max-width: none; }
   .instr-doc h1 { margin: 10mm 0 8mm; font-size: 15pt; line-height: 1.3; text-align: center; color: #000; }
   .instr-doc .instr h2 { margin: 6mm 0 2mm; font-size: 11pt; color: #000; break-after: avoid; }

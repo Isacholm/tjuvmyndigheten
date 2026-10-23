@@ -1,10 +1,11 @@
 // Bygger assets/teckensprak-data.js: en ordlista från webbplatsens ord till
 // transkriberade tecken ur Svenskt teckenspråkslexikon.
 //
-//   curl -LO https://raw.githubusercontent.com/zrajm/teckentranskription/master/lexicon-data.js
-//   node tools/teckensprak.mjs lexicon-data.js
+//   node tools/teckensprak.mjs
 //
-// Kör om när texterna på webbplatsen ändras.
+// Kör om när texterna på webbplatsen ändras. Lexikonet läses från tools/lexicon-data.js,
+// en kopia av https://raw.githubusercontent.com/zrajm/teckentranskription/master/lexicon-data.js.
+// Ladda ner filen på nytt för att uppdatera lexikonet, eller ange en annan fil som argument.
 
 import fs from 'fs';
 import path from 'path';
@@ -13,7 +14,7 @@ const ROOT = path.join(path.dirname(new URL(import.meta.url).pathname), '..');
 const SEP = '\u{10C960}'; // skiljetecken mellan sammansatta tecken
 
 // lexicon-data.js läses som data, inte som kod.
-const src = fs.readFileSync(process.argv[2], 'utf8');
+const src = fs.readFileSync(process.argv[2] || path.join(ROOT, 'tools', 'lexicon-data.js'), 'utf8');
 const tagStart = src.indexOf('let lexiconTags=[') + 16;
 const tags = JSON.parse(src.slice(tagStart, src.indexOf(']\n', tagStart) + 1));
 const rowStart = src.indexOf('let lexicon=[') + 12;
