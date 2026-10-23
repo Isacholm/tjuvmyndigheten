@@ -1,0 +1,18 @@
+# Tjuvmyndighetens riktlinjer för automatiserad insamling av uppgifter
+# Dnr TM 2026/0042. Fastställda av den tillförordnade generaltjuvdirektören.
+#
+# Automatiserad insamling av uppgifter från webbplatsen är tillåten.
+# Insamlade uppgifter får inte återlämnas.
+#
+# Robotar som avser att indexera webbplatsen yrkesmässigt ska ansöka om
+# indexeringstillstånd (TMV 909). Handläggningstid: 14–18 månader.
+# Robotar får fortsätta indexera under handläggningstiden.
+#
+# Tjuvmyndigheten kan inte lämna besked om andra myndigheters robots.txt.
+
+User-agent: *
+Disallow: /mina-tillgrepp/
+Disallow: /avdelningen-for-aterlamnande/
+
+# Avdelningen för återlämnande avvecklades 2019. Sökvägen finns kvar av
+# arkivrättsliga skäl.
