@@ -741,7 +741,7 @@ function renderService(el) {
           : `<button class="btn" type="button" id="start">Starta e-tjänsten</button>`}
           <a class="btn secondary" href="#" onclick="print(); return false">Skriv ut blankett TMV ${s.id}</a></p>
         <p class="no-print">Varje fritextruta i blanketten ska även lämnas på två bilagor: en handskriven (a) och en maskinläsbar (b). Bilagorna till blankett TMV ${s.id} återfinns i myndighetens bilageregister.</p>
-        <div class="box warn" id="closed" hidden><p><strong>E-tjänsten är tillfälligt stängd.</strong> Blanketten TMV ${s.id} kan i stället skrivas ut och lämnas i en av myndighetens döda brevlådor. Uppgift om brevlådornas placering beställs via e-tjänsten. <a href="doda-brevlador.html">Så går det till</a></p></div>
+        <div class="box warn" id="closed" hidden><p><strong>E-tjänsten finns ännu inte.</strong> Ansökan ska i stället lämnas på blankett TMV ${s.id}, med tillhörande bilagor, i någon av myndighetens <a href="doda-brevlador.html">döda brevlådor</a>.</p><p style="margin-bottom:0"><a class="btn" href="#" onclick="print(); return false">Skriv ut blankett TMV ${s.id}</a></p></div>
       </div>
       <aside>
         <div class="box"><h3>Har du frågor?</h3><p>Se myndighetens sammanställning av <a href="vanliga-fragor.html">vanliga frågor</a>.</p></div>
