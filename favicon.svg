@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 90" role="img" aria-label="Tjuvmyndighetens logotyp">
+  <defs>
+    <!-- en kofot, liggande från nere till vänster upp till höger -->
+    <g id="bar" fill="none" stroke-linejoin="round">
+      <path d="M8,86 L15,80 L80,15 C86,8 93,8 95,15 L95,25" stroke="#2e4644" stroke-width="7"/>
+      <path d="M20,75 L78,17" stroke="#fff" stroke-width="1"/>
+      <path d="M95,19 L95,26" stroke="#fff" stroke-width="1.2"/>
+      <path d="M5,87 L13,86" stroke="#fff" stroke-width="1.2"/>
+    </g>
+  </defs>
+  <!-- gula vinklar -->
+  <g fill="none" stroke="#c9a23a" stroke-width="7" stroke-linejoin="miter">
+    <path d="M40,24 L50,14 L60,24"/>
+    <path d="M40,66 L50,76 L60,66"/>
+  </g>
+  <use href="#bar"/>
+  <!-- vit kant där kofötterna korsar varandra -->
+  <clipPath id="mid"><rect x="38" y="35" width="24" height="24"/></clipPath>
+  <path d="M85,80 L20,15" stroke="#fff" stroke-width="11" fill="none" clip-path="url(#mid)"/>
+  <use href="#bar" transform="translate(100,0) scale(-1,1)"/>
+</svg>

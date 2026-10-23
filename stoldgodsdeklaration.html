@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stöldgodsdeklaration 2026 – Tjuvmyndigheten</title>
+  <meta name="description" content="Lämna din stöldgodsdeklaration digitalt (TMV 301).">
+  <meta property="og:title" content="Stöldgodsdeklaration 2026 – Tjuvmyndigheten">
+  <meta property="og:description" content="Lämna din stöldgodsdeklaration digitalt (TMV 301).">
+  <meta property="og:image" content="https://tjuvmyndigheten.se/assets/delning.png">
+  <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/site.js" defer></script>
+  <script src="assets/deklaration.js" defer></script>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="wrap" id="main">
+    <div class="crumbs"><a href="./">Startsida</a><span aria-hidden="true">›</span><a href="e-tjanster.html">E-tjänster</a><span aria-hidden="true">›</span><a href="e-tjanster.html#deklaration">Deklaration och redovisning</a><span aria-hidden="true">›</span>Stöldgodsdeklaration</div>
+    <h1>Stöldgodsdeklaration 2026</h1>
+    <div class="meta"><span>Blankett <strong>TMV 301</strong></span><span>Beskattningsår <strong>2026</strong></span><span>Sista dag <strong>2 maj 2027</strong></span></div>
+    <p class="ingress">Redovisa den egendom du har tillgripit under beskattningsåret. Fält markerade med * är obligatoriska.</p>
+    <div class="box warn" style="max-width:680px"><p><strong>Observera:</strong> Att inte deklarera sitt stöldgods kan medföra en administrativ sanktionsavgift. Själva stölden omfattas inte av denna bestämmelse.</p></div>
+
+    <div id="errors" class="errors" role="alert" tabindex="-1" hidden><h2>Deklarationen innehåller fel</h2><ul></ul></div>
+
+    <form class="etj" id="dekl" novalidate>
+      <fieldset>
+        <legend>Uppgifter om deklaranten</legend>
+        <div class="field"><label for="trn">Tjuvregistreringsnummer (TRN) *<span class="hint">Anges i formatet TRN 123-456. Saknar du TRN, se <a href="tjanst.html?id=104">Registrera yrkestjuv</a>.</span></label>
+          <input type="text" id="trn" name="trn" placeholder="TRN 123-456" autocomplete="off"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tillgrepp under beskattningsåret</legend>
+        <div class="field"><label for="antal">Totalt antal genomförda tillgrepp *</label>
+          <input type="number" id="antal" name="antal" min="0" step="1" inputmode="numeric"><span class="unit">st</span></div>
+        <div class="field"><label for="varde">Sammanlagt uppskattat godsvärde *<span class="hint">Ange marknadsvärdet vid tidpunkten för tillgreppet, inte det pris du fått vid försäljning.</span></label>
+          <input type="number" id="varde" name="varde" min="0" step="1" inputmode="numeric"><span class="unit">kr</span></div>
+        <div class="field"><label for="ater">Varav gods som återlämnats av misstag</label>
+          <input type="number" id="ater" name="ater" min="0" step="1" inputmode="numeric" value="0"><span class="unit">kr</span></div>
+        <div class="field"><label for="distans">Tillgrepp utförda på distans<span class="hint">Avser tillgrepp där du inte varit fysiskt närvarande, exempelvis via internet.</span></label>
+          <input type="number" id="distans" name="distans" min="0" step="1" inputmode="numeric" value="0"><span class="unit">st</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Avdrag</legend>
+        <div class="field"><label for="kofot">Avdragsgilla kofötter<span class="hint">Schablonavdrag 450 kr per besiktigad kofot, högst 3 st per beskattningsår.</span></label>
+          <input type="number" id="kofot" name="kofot" min="0" step="1" inputmode="numeric" value="0"><span class="unit">st</span></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Övriga upplysningar</legend>
+        <div class="field radios"><span class="label">Har du blivit bestulen på stöldgods? *</span>
+          <label><input type="radio" name="bestulen" value="ja"> Ja</label>
+          <label><input type="radio" name="bestulen" value="nej"> Nej</label></div>
+        <div class="field radios"><span class="label">Har du för avsikt att fortsätta verksamheten? *</span>
+          <label><input type="radio" name="fortsatt" value="ja"> Ja</label>
+          <label><input type="radio" name="fortsatt" value="nej"> Nej</label>
+          <label><input type="radio" name="fortsatt" value="vetej"> Vet ej</label></div>
+      </fieldset>
+
+      <div class="field"><label class="check"><input type="checkbox" id="intyg" name="intyg"> <span>Jag intygar på heder och samvete att de uppgifter jag lämnat är riktiga och fullständiga, i den mån heder och samvete föreligger. *</span></label></div>
+
+      <p><button class="btn" type="submit">Skicka in deklarationen</button></p>
+      <p style="font-size:14px;color:var(--muted)">Tjuvmyndigheten sparar inte de uppgifter du lämnar i e-tjänsten. Vi har tappat bort de förra.</p>
+    </form>
+
+    <div id="kvitto" class="receipt" role="status" tabindex="-1" hidden></div>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>
