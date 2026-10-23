@@ -6,6 +6,7 @@ const NAV = [
   ['arbeta-som-tjuv.html', 'Arbeta som tjuv'],
   ['bestulen.html', 'Har du blivit bestulen?'],
   ['handlaggningstider.html', 'Handläggningstider'],
+  ['nyheter.html', 'Nyheter'],
   ['om-myndigheten.html', 'Om myndigheten'],
 ];
 
